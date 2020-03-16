@@ -34,7 +34,7 @@ namespace Control.Services
 
             var type = ruleText.Before(" ").TrimWhitespace();
 
-            grammarRule.CommandType = type switch
+            grammarRule.RuleType = type switch
             {
                 "rule" => RuleType.Rule,
                 "token" => RuleType.Token,
@@ -57,7 +57,9 @@ namespace Control.Services
         {
 
             return text
+                .Replace("||", "&OR")
                 .Split('|', StringSplitOptions.RemoveEmptyEntries)
+                .Select(x => x.Replace("&OR", "||"))
                 .Select(x => new Alternative
                 {
                     RuleClauses = x
@@ -73,6 +75,18 @@ namespace Control.Services
         {
 
             var clause = new RuleClause();
+
+            if (text.StartsWith("'")
+                && text.EndsWith("'")
+                && text.Count(x => x == '\'') == 2)
+            {
+
+                clause.Clause = text;
+                clause.Qualifier = ClauseQualifier.None;
+
+                return clause;
+
+            }
 
             var parts = text
                 .Split('&', StringSplitOptions.None)

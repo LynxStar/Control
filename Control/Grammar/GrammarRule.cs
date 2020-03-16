@@ -8,7 +8,7 @@ namespace Control.Grammar
     public class GrammarRule
     {
 
-        public RuleType CommandType { get; set; }
+        public RuleType RuleType { get; set; }
         public string Name { get; set; }
         public List<Alternative> Alternatives { get; set; }
 
@@ -17,7 +17,7 @@ namespace Control.Grammar
 
             var alternatives = Alternatives.Select(x => x.ToString()).Aggregate((x, y) => $"{x} | {y}");
 
-            return $"{CommandType} {Name} : {alternatives}";
+            return $"{RuleType} {Name} : {alternatives}";
         }
 
     }

@@ -97,7 +97,7 @@ token COMMA : ',';
 token ASSIGNMENT : '=';
 
 token EQUALITY : '==';
-token INEQUALITY : '==';
+token INEQUALITY : '!=';
 token GREATERTHAN : '>';
 token LESSTHAN : '<';
 token GREATERTHANOREQUALTO : '>=';
@@ -109,7 +109,7 @@ token NOT : '!';
 token SUCHTHAT : '=>';
 
 token STRING
-   : DOUBLEQUOTE (ESC | SAFECODEPOINT)* DOUBLEQUOTE
+   : DOUBLEQUOTE ESC_OR_SAFE* DOUBLEQUOTE
    ;
 
 token NUMBER 
@@ -121,18 +121,26 @@ token WHITESPACE
 	: [ \t\n\r]+
     ;
 
-token IDENTIFIER: LETTER (LETTER | DIGIT)*;
+token IDENTIFIER: LETTER LETTER_OR_DIGIT*;
 
 fragment LETTER     : [a-zA-Z] ;
 fragment DIGIT      : [0-9] ;
 fragment DOUBLEQUOTE : '"';
 
+fragment LETTER_OR_DIGIT
+	: LETTER 
+	| DIGIT
+	;
+
+fragment ESC_OR_SAFE
+	: ESC 
+	| SAFECODEPOINT
+	;
+
 fragment ESC
-   : '\\' (["\\/bfnrt] | UNICODE)
+   : \ DOUBLEQUOTE
    ;
-fragment UNICODE
-   : 'u' HEX HEX HEX HEX
-   ;
-fragment HEX
-   : [0-9a-fA-F]
+
+fragment SAFECODEPOINT
+   : [^ DOUBLEQUOTE ]
    ;

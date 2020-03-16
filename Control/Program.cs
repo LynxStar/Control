@@ -17,14 +17,23 @@ namespace Control
 
         public async Task Run()
         {
+
             var exampleProgram = await File.ReadAllTextAsync("./Example.st");
 
             var grammar = await File.ReadAllTextAsync("./Shift.ctrl");
 
-            var grammarRulesService = new RulesService();
+            var grammarRulesService = new R2Service();
 
             var rules = grammarRulesService.BuildGrammarRules(grammar);
+
+            var parserService = new ParserService();
+
+            var code = parserService.Parse(exampleProgram, rules);
+
+
         }
+
+        
 
     }
 }
