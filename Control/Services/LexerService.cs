@@ -18,6 +18,8 @@ namespace Control.Services
             var tokenStream = new LinkedList<Token>();
 
             tokenStream.AddLast(new Token { Name = "@@@RAWSOURCE@@@", Capture = source, IsRaw = true });
+                       
+            var lastDisplay = DateTime.UtcNow;
 
             foreach (var tokenRule in tokenRules)
             {
@@ -27,8 +29,12 @@ namespace Control.Services
                 while (tokenNode != null)
                 {
 
-                    Visualize(tokenStream, tokenNode, tokenRule);
-                    DumpStream(tokenStream);
+                    if (DateTime.UtcNow - lastDisplay > TimeSpan.FromMilliseconds(250))
+                    {
+                        lastDisplay = DateTime.UtcNow;
+                        Visualize(tokenStream, tokenNode, tokenRule);
+
+                    }
 
                     var token = tokenNode.Value;
 
@@ -83,6 +89,8 @@ namespace Control.Services
 
             }
 
+            DumpStream(tokenStream);
+
         }
 
         public void Visualize(LinkedList<Token> stream, LinkedListNode<Token> current, TokenRegex tokenRegex)
@@ -90,24 +98,28 @@ namespace Control.Services
 
             Console.Clear();
 
-            var first = stream.First;
-
             Console.WriteLine($"Looking for: {tokenRegex.Name} with `{tokenRegex.Regex}`");
             Console.WriteLine();
             Console.WriteLine("----------------------------------------------------------------------");
             Console.WriteLine();
 
-            while (first != null)
-            {
+            var printNow = current.PreviousBy(5);
 
-                var hereMarker = first == current
+            for(var i = 0; i < 10; i++)
+            {
+                var hereMarker = printNow == current
                     ? "===> "
                     : "     "
                     ;
 
-                Console.WriteLine($"{hereMarker}{first.Value.Name.PadRight(30)}||{first.Value.Capture.Preview(30)}");
+                Console.WriteLine($"{hereMarker}{printNow.Value.Name.PadRight(30)}||{printNow.Value.Capture.Preview(30)}");
 
-                first = first.Next;
+                printNow = printNow.Next;
+
+                if(printNow == null)
+                {
+                    break;
+                }
 
             }
 
@@ -125,8 +137,10 @@ namespace Control.Services
                 {
                     builder.Append(node.Capture);
                 }
-
-                builder.Append($"{{{node.Name}}}");
+                else
+                {
+                    builder.Append($"{{{node.Name}}}");
+                }
 
             }
 

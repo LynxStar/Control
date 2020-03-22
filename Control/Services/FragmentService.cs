@@ -31,7 +31,7 @@ namespace Control.Services
                 var tokenRegex = new TokenRegex
                 {
                     Name = lexerRule.Name,
-                    Regex = new Regex(regex)
+                    Regex = new Regex(regex, RegexOptions.Singleline)
                 };
 
                 tokenRegexes.Add(tokenRegex);
@@ -87,13 +87,30 @@ namespace Control.Services
             if (ruleClause.IsLiteral)
             {
 
-                return Regex.Escape(ruleClause.Clause);
+                clause = Regex.Escape(ruleClause.Clause);
 
             }
             else
             {
-                return FlattenFragment(ruleClause.Clause, rules);
+                clause = FlattenFragment(ruleClause.Clause, rules);
             }
+
+            if (ruleClause.Qualifier != ClauseQualifier.None)
+            {
+                var qualifier = ruleClause.Qualifier switch
+                {
+                    ClauseQualifier.None => String.Empty,
+                    ClauseQualifier.NoneToOne => "?",
+                    ClauseQualifier.OneOrMore => "+",
+                    ClauseQualifier.Optional => "*"
+                };
+
+                clause = $"({clause}){qualifier}";
+
+            }
+
+
+            return clause;
 
         }
 

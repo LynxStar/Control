@@ -111,16 +111,15 @@ token SUCHTHAT : '=>';
 token STRING
    : `(["'])(?:(?=(\\?))\2.)*?\1`
    ;
-
-token NUMBER 
-    : WHOLENUMBER 
-    ;
+	
 token WHOLENUMBER : DIGIT+;
+
+token COMMENT : `\/\/.*?((?=\n)|(?=\r\n))`;
 
 token IDENTIFIER : LETTER LETTER_OR_DIGIT*;
 
 token WHITESPACE 
-	: [ \t\n\r]+
+	: `[ \t\n\r]+`
     ;
 
 fragment LETTER     : `[a-zA-Z]` ;
