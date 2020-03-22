@@ -32,7 +32,7 @@ namespace Control.Services
             {
 
                 var grammarRule = new GrammarRule();
-
+                
                 grammarRule.RuleType = CaptureCommandType(rulesStream);
                 grammarRule.Name = CaptureCommandName(rulesStream);
                 grammarRule.Alternatives = CaptureAlternatives(rulesStream);
@@ -210,6 +210,7 @@ namespace Control.Services
             clause.Clause = left.Clause;
             clause.Qualifier = left.Qualifier;
             clause.IsLiteral = left.IsLiteral;
+            clause.IsRegex = left.IsRegex;
 
             var nextCharacter = stream.Source[stream.Index];
 
@@ -250,9 +251,17 @@ namespace Control.Services
 
                     stream.Index++;
                     clause.IsLiteral = true;
-                    clause.Clause = CaptureStringLiteral(stream);
+                    clause.Clause = CaptureStringLiteral(stream, '\'');
                     return clause;
 
+                }
+
+                if (nextCharacter == '`')
+                {
+                    stream.Index++;
+                    clause.IsRegex = true;
+                    clause.Clause = CaptureStringLiteral(stream, '`');
+                    return clause;
                 }
 
                 if (Whitespace.Contains(nextCharacter))
@@ -289,7 +298,7 @@ namespace Control.Services
             return clause;
         }
 
-        public string CaptureStringLiteral(RulesStream stream)
+        public string CaptureStringLiteral(RulesStream stream, char delimiter)
         {
 
             var start = stream.Index;
@@ -300,7 +309,7 @@ namespace Control.Services
 
                 var nextCharacter = stream.Source[stream.Index];
 
-                if (nextCharacter == '\'')
+                if (nextCharacter == delimiter)
                 {
                     stream.Index++;
                     break;

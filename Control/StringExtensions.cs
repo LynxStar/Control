@@ -74,5 +74,22 @@ namespace Control
         {
             return value.Trim(' ', '\r', '\n', '\t');
         }
+
+        public static string Preview(this string input, int length)
+        {
+            var literal = input.Replace("\r\n", "\\r\\n");
+
+            if (literal.Length > length)
+            {
+                return $"{literal.Substring(0, length)}...";
+            }
+
+            else
+            {
+                return literal.Substring(0, literal.Length);
+            }
+
+        }
+
     }
 }

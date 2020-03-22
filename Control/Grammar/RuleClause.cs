@@ -9,6 +9,7 @@ namespace Control.Grammar
         //parameter*&COMMA
         public string Clause { get; set; }
         public bool IsLiteral { get; set; }
+        public bool IsRegex { get; set; }
         public ClauseQualifier Qualifier { get; set; }
         public bool DelimiterInUse { get; set; }
         public string QualifierArgument { get; set; }

@@ -196,5 +196,40 @@ namespace Control.Tests.Services
 
         }
 
+        [TestMethod]
+        public void IdentifierTest()
+        {
+
+            var source = "token IDENTIFIER : LETTER LETTER_OR_DIGIT*;";
+
+            var rules = CUT.BuildGrammarRules(source);
+
+            var rule = rules.Single();
+
+            rule.RuleType.Should().Be(RuleType.Token);
+            rule.Name.Should().Be("IDENTIFIER");
+
+            rule.Alternatives.Count().Should().Be(1);
+
+            var alt1 = rule.Alternatives[0];
+
+            alt1.RuleClauses.Count().Should().Be(2);
+
+            alt1.RuleClauses[0].Clause.Should().Be("LETTER");
+            alt1.RuleClauses[0].IsLiteral.Should().BeFalse();
+            alt1.RuleClauses[0].Qualifier.Should().Be(ClauseQualifier.None);
+            alt1.RuleClauses[0].DelimiterInUse.Should().BeFalse();
+            alt1.RuleClauses[0].QualifierArgument.Should().BeNull();
+            alt1.RuleClauses[0].RightQualifier.Should().Be(ClauseQualifier.None);
+
+            alt1.RuleClauses[1].Clause.Should().Be("LETTER_OR_DIGIT");
+            alt1.RuleClauses[1].IsLiteral.Should().BeFalse();
+            alt1.RuleClauses[1].Qualifier.Should().Be(ClauseQualifier.Optional);
+            alt1.RuleClauses[1].DelimiterInUse.Should().BeFalse();
+            alt1.RuleClauses[1].QualifierArgument.Should().BeNull();
+            alt1.RuleClauses[1].RightQualifier.Should().Be(ClauseQualifier.None);
+
+        }
+
     }
 }

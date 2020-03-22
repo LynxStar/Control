@@ -109,7 +109,7 @@ token NOT : '!';
 token SUCHTHAT : '=>';
 
 token STRING
-   : DOUBLEQUOTE ESC_OR_SAFE* DOUBLEQUOTE
+   : `(["'])(?:(?=(\\?))\2.)*?\1`
    ;
 
 token NUMBER 
@@ -117,14 +117,14 @@ token NUMBER
     ;
 token WHOLENUMBER : DIGIT+;
 
+token IDENTIFIER : LETTER LETTER_OR_DIGIT*;
+
 token WHITESPACE 
 	: [ \t\n\r]+
     ;
 
-token IDENTIFIER: LETTER LETTER_OR_DIGIT*;
-
-fragment LETTER     : [a-zA-Z] ;
-fragment DIGIT      : [0-9] ;
+fragment LETTER     : `[a-zA-Z]` ;
+fragment DIGIT      : `[0-9]` ;
 fragment DOUBLEQUOTE : '"';
 
 fragment LETTER_OR_DIGIT
@@ -138,9 +138,9 @@ fragment ESC_OR_SAFE
 	;
 
 fragment ESC
-   : \ DOUBLEQUOTE
+   : `\` DOUBLEQUOTE
    ;
 
 fragment SAFECODEPOINT
-   : [^ DOUBLEQUOTE ]
+   : `[^` DOUBLEQUOTE `]`
    ;

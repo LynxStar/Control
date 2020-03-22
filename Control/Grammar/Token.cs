@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Control.Grammar
 {
     
-    public class TokenRegex
+    public class Token
     {
 
         public string Name { get; set; }
-        public Regex Regex { get; set; }
+        public string Capture { get; set; }
+        public bool IsRaw { get; set; }
 
         public override string ToString()
         {
-            return $"{Name}: {Regex}";
+            return Name;
         }
-
 
     }
 }
