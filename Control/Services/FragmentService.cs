@@ -21,7 +21,7 @@ namespace Control.Services
                 ;
 
             var lexerRules = rules
-                .Where(x => x.RuleType == RuleType.Token)
+                .Where(x => x.RuleType == RuleType.Token || x.RuleType == RuleType.Noop)
                 ;
 
             foreach (var lexerRule in lexerRules)
@@ -31,7 +31,8 @@ namespace Control.Services
                 var tokenRegex = new TokenRegex
                 {
                     Name = lexerRule.Name,
-                    Regex = new Regex(regex, RegexOptions.Singleline)
+                    Regex = new Regex(regex, RegexOptions.Singleline),
+                    IsNoop = lexerRule.RuleType == RuleType.Noop
                 };
 
                 tokenRegexes.Add(tokenRegex);

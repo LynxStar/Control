@@ -17,7 +17,7 @@ namespace Control.Services
 
             var tokenStream = new LinkedList<Token>();
 
-            tokenStream.AddLast(new Token { Name = "@@@RAWSOURCE@@@", Capture = source, IsRaw = true });
+            tokenStream.AddLast(new Token { Name = "@@@RAWSOURCE@@@", Capture = source, IsRaw = true, IsNoop = false });
                        
             var lastDisplay = DateTime.UtcNow;
 
@@ -56,7 +56,7 @@ namespace Control.Services
                     {
                         var before = token.Capture.Substring(0, match.Index);
 
-                        tokenStream.AddBefore(tokenNode, new Token { Name = "@@@RAWSOURCE@@@", Capture = before, IsRaw = true });
+                        tokenStream.AddBefore(tokenNode, new Token { Name = "@@@RAWSOURCE@@@", Capture = before, IsRaw = true, IsNoop = false });
 
                     }
 
@@ -66,7 +66,8 @@ namespace Control.Services
                     {
                         Name = tokenRule.Name,
                         Capture = capture,
-                        IsRaw = false
+                        IsRaw = false,
+                        IsNoop = tokenRule.IsNoop
                     };
 
                     var captureNode = tokenStream.AddAfter(tokenNode, captureToken);
@@ -79,7 +80,7 @@ namespace Control.Services
                     {
 
                         var after = token.Capture.Substring(afterStart, endLength);
-                        tokenStream.AddAfter(captureNode, new Token { Name = "@@@RAWSOURCE@@@", Capture = after, IsRaw = true });
+                        tokenStream.AddAfter(captureNode, new Token { Name = "@@@RAWSOURCE@@@", Capture = after, IsRaw = true, IsNoop = false });
 
                     }
 
@@ -128,18 +129,20 @@ namespace Control.Services
         public void DumpStream(LinkedList<Token> stream)
         {
 
-            var builder = new StringBuilder();
+            var formattedBuilder = new StringBuilder();
+            var rawBuilder = new StringBuilder();
 
-            foreach(var node in stream)
+            foreach (var node in stream)
             {
 
                 if(node.Name == "WHITESPACE")
                 {
-                    builder.Append(node.Capture);
+                    formattedBuilder.Append(node.Capture);
                 }
                 else
                 {
-                    builder.Append($"{{{node.Name}}}");
+                    formattedBuilder.Append($"{{{node.Name}}}");
+                    rawBuilder.AppendLine($"{{{node.Name}}}");
                 }
 
             }
@@ -149,7 +152,14 @@ namespace Control.Services
                 File.Delete("./streamDump.txt");
             }
 
-            File.WriteAllText("./streamDump.txt", builder.ToString());
+            File.WriteAllText("./streamDump.txt", formattedBuilder.ToString()); 
+            
+            if (File.Exists("./rawDump.txt"))
+            {
+                File.Delete("./rawDump.txt");
+            }
+
+            File.WriteAllText("./rawDump.txt", rawBuilder.ToString());
 
         }
 

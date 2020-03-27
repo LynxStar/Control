@@ -26,7 +26,8 @@ namespace Control.Grammar
     {
         Fragment,
         Token,
-        Rule
+        Rule,
+        Noop
     }
 
 }

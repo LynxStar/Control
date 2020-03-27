@@ -11,6 +11,7 @@ namespace Control.Grammar
         public string Name { get; set; }
         public string Capture { get; set; }
         public bool IsRaw { get; set; }
+        public bool IsNoop { get; set; }
 
         public override string ToString()
         {

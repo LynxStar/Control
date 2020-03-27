@@ -16,7 +16,7 @@ namespace Control.Tests.Services
     public class RuleServiceTest
     {
 
-        private readonly R2Service CUT = new R2Service();
+        private readonly RulesService CUT = new RulesService();
 
         [TestMethod]
         public void SourceTest()

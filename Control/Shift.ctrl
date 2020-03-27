@@ -114,11 +114,11 @@ token STRING
 	
 token WHOLENUMBER : DIGIT+;
 
-token COMMENT : `\/\/.*?((?=\n)|(?=\r\n))`;
+noop COMMENT : `\/\/.*?((?=\n)|(?=\r\n))`;
 
 token IDENTIFIER : LETTER LETTER_OR_DIGIT*;
 
-token WHITESPACE 
+noop WHITESPACE 
 	: `[ \t\n\r]+`
     ;
 

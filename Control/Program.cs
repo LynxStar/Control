@@ -22,7 +22,7 @@ namespace Control
 
             var grammar = await File.ReadAllTextAsync("./Shift.ctrl");
 
-            var grammarRulesService = new R2Service();
+            var grammarRulesService = new RulesService();
 
             var rules = grammarRulesService.BuildGrammarRules(grammar);
 
