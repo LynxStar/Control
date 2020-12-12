@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Control", "Control\Control.csproj", "{3ADBE7B6-1492-45E1-B81C-C0956BF933BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Control.Tests", "Control.Tests\Control.Tests.csproj", "{26C37CD7-AFC1-48F1-AA8F-BC67603A9AF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Control.Tests", "Control.Tests\Control.Tests.csproj", "{26C37CD7-AFC1-48F1-AA8F-BC67603A9AF0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shift", "Shift\Shift.csproj", "{AA837A2D-68AA-46ED-B9F6-5A36BE04A73B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{26C37CD7-AFC1-48F1-AA8F-BC67603A9AF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26C37CD7-AFC1-48F1-AA8F-BC67603A9AF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26C37CD7-AFC1-48F1-AA8F-BC67603A9AF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA837A2D-68AA-46ED-B9F6-5A36BE04A73B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA837A2D-68AA-46ED-B9F6-5A36BE04A73B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA837A2D-68AA-46ED-B9F6-5A36BE04A73B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA837A2D-68AA-46ED-B9F6-5A36BE04A73B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -12,7 +12,7 @@ namespace Control.Services
     public class LexerService
     {
 
-        public void Tokenize(string source, IEnumerable<TokenRegex> tokenRules)
+        public LinkedList<Token> Tokenize(string source, IEnumerable<TokenRegex> tokenRules)
         {
 
             var tokenStream = new LinkedList<Token>();
@@ -91,6 +91,8 @@ namespace Control.Services
             }
 
             DumpStream(tokenStream);
+
+            return tokenStream;
 
         }
 

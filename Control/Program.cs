@@ -28,7 +28,7 @@ namespace Control
 
             var parserService = new ParserService();
 
-            var code = parserService.Parse(exampleProgram, rules);
+            //var code = parserService.Parse(exampleProgram, rules);
 
 
         }

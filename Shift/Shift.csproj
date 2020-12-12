@@ -6,6 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Control\Control.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Example.st">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Shift.ctrl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
