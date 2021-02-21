@@ -22,7 +22,8 @@ namespace Shift
 
             var sourceNode = context
                 .SourceRules
-                .Single(x => x.Name == "source")
+                .Single(x => x.Value.Name == "source")
+                .Value
                 ;
 
             var parseTree = parserService.Parse(exampleProgram, sourceNode, context);
