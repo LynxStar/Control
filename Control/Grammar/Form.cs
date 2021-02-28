@@ -6,12 +6,7 @@ using System.Threading.Tasks;
 
 namespace Control.Grammar
 {
-    
-    public class Token
+    public class Form
     {
-
-
-
     }
-
 }

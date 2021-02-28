@@ -19,215 +19,71 @@ namespace Control.Tests.Services
         private readonly RulesService CUT = new RulesService();
 
         [TestMethod]
-        public void SourceTest()
+        public void CaptureRuleTest()
         {
 
-            var source = 
-@"rule source
-	: structure
-	| library
-	| service
-	;";
+            var stream = new RulesStream { Source = "form parameter : type | identifier;" };
 
-            var rules = CUT.BuildGrammarRules(source);
+            var rule = CUT.CaptureRule(stream);
 
-            var rule = rules.Single();
+            rule.RuleType.Should().Be(RuleType.Form);
+            rule.Name.Should().Be("parameter");
 
-            rule.RuleType.Should().Be(RuleType.Rule);
-            rule.Name.Should().Be("source");
+            var options = rule.Options;
 
-            rule.Alternatives.Count().Should().Be(3);
+            options.Count().Should().Be(2);
 
-            var alt1 = rule.Alternatives[0];
+            var option1 = options[0];
+            option1.Clauses.First().Value.Should().Be("type");
+            option1.Clauses.First().ClauseType.Should().Be(ClauseType.Reference);
 
-            alt1.RuleClauses.Count().Should().Be(1);
-            alt1.RuleClauses[0].Clause.Should().Be("structure");
-            alt1.RuleClauses[0].IsLiteral.Should().BeFalse();
-            alt1.RuleClauses[0].Qualifier.Should().Be(ClauseQualifier.None);
-            alt1.RuleClauses[0].DelimiterInUse.Should().BeFalse();
-            alt1.RuleClauses[0].QualifierArgument.Should().BeNull();
-            alt1.RuleClauses[0].RightQualifier.Should().Be(ClauseQualifier.None);
-
-            var alt2 = rule.Alternatives[1];
-
-            alt2.RuleClauses.Count().Should().Be(1);
-            alt2.RuleClauses[0].Clause.Should().Be("library");
-            alt2.RuleClauses[0].IsLiteral.Should().BeFalse();
-            alt2.RuleClauses[0].Qualifier.Should().Be(ClauseQualifier.None);
-            alt2.RuleClauses[0].DelimiterInUse.Should().BeFalse();
-            alt2.RuleClauses[0].QualifierArgument.Should().BeNull();
-            alt2.RuleClauses[0].RightQualifier.Should().Be(ClauseQualifier.None);
-
-            var alt3 = rule.Alternatives[2];
-
-            alt3.RuleClauses.Count().Should().Be(1);
-            alt3.RuleClauses[0].Clause.Should().Be("service");
-            alt3.RuleClauses[0].IsLiteral.Should().BeFalse();
-            alt3.RuleClauses[0].Qualifier.Should().Be(ClauseQualifier.None);
-            alt3.RuleClauses[0].DelimiterInUse.Should().BeFalse();
-            alt3.RuleClauses[0].QualifierArgument.Should().BeNull();
-            alt3.RuleClauses[0].RightQualifier.Should().Be(ClauseQualifier.None);
-
-        }
-        
-        [TestMethod]
-        public void StructureTest()
-        {
-
-            var source = "rule structure : STRUCTURE identifier OPENSBRACKET field* CLOSESBRACKET;";
-
-            var rules = CUT.BuildGrammarRules(source);
-
-            var rule = rules.Single();
-
-            rule.RuleType.Should().Be(RuleType.Rule);
-            rule.Name.Should().Be("structure");
-
-            rule.Alternatives.Count().Should().Be(1);
-
-            var alt1 = rule.Alternatives[0];
-
-            alt1.RuleClauses.Count().Should().Be(5);
-
-            alt1.RuleClauses[0].Clause.Should().Be("STRUCTURE");
-            alt1.RuleClauses[0].IsLiteral.Should().BeFalse();
-            alt1.RuleClauses[0].Qualifier.Should().Be(ClauseQualifier.None);
-            alt1.RuleClauses[0].DelimiterInUse.Should().BeFalse();
-            alt1.RuleClauses[0].QualifierArgument.Should().BeNull();
-            alt1.RuleClauses[0].RightQualifier.Should().Be(ClauseQualifier.None);
-
-            alt1.RuleClauses[1].Clause.Should().Be("identifier");
-            alt1.RuleClauses[1].IsLiteral.Should().BeFalse();
-            alt1.RuleClauses[1].Qualifier.Should().Be(ClauseQualifier.None);
-            alt1.RuleClauses[1].DelimiterInUse.Should().BeFalse();
-            alt1.RuleClauses[1].QualifierArgument.Should().BeNull();
-            alt1.RuleClauses[1].RightQualifier.Should().Be(ClauseQualifier.None);
-
-            alt1.RuleClauses[2].Clause.Should().Be("OPENSBRACKET");
-            alt1.RuleClauses[2].IsLiteral.Should().BeFalse();
-            alt1.RuleClauses[2].Qualifier.Should().Be(ClauseQualifier.None);
-            alt1.RuleClauses[2].DelimiterInUse.Should().BeFalse();
-            alt1.RuleClauses[2].QualifierArgument.Should().BeNull();
-            alt1.RuleClauses[2].RightQualifier.Should().Be(ClauseQualifier.None);
-
-            alt1.RuleClauses[3].Clause.Should().Be("field");
-            alt1.RuleClauses[3].IsLiteral.Should().BeFalse();
-            alt1.RuleClauses[3].Qualifier.Should().Be(ClauseQualifier.Optional);
-            alt1.RuleClauses[3].DelimiterInUse.Should().BeFalse();
-            alt1.RuleClauses[3].QualifierArgument.Should().BeNull();
-            alt1.RuleClauses[3].RightQualifier.Should().Be(ClauseQualifier.None);
-
-            alt1.RuleClauses[4].Clause.Should().Be("CLOSESBRACKET");
-            alt1.RuleClauses[4].IsLiteral.Should().BeFalse();
-            alt1.RuleClauses[4].Qualifier.Should().Be(ClauseQualifier.None);
-            alt1.RuleClauses[4].DelimiterInUse.Should().BeFalse();
-            alt1.RuleClauses[4].QualifierArgument.Should().BeNull();
-            alt1.RuleClauses[4].RightQualifier.Should().Be(ClauseQualifier.None);
+            var option2 = options[1];
+            option2.Clauses.First().Value.Should().Be("identifier");
+            option2.Clauses.First().ClauseType.Should().Be(ClauseType.Reference);
 
         }
 
         [TestMethod]
-        public void ParametersTest()
+        public void ProcessGrammarTest()
         {
 
-            var source = "rule parameters : OPENPARENS parameter*&COMMA CLOESPARENS;";
+            var source = @"   
+token STRUCTURE : 'structure';
+token LIBRARY : 'library';
+token SERVICE : 'service';
+token EFFECT : 'effect';
 
-            var rules = CUT.BuildGrammarRules(source);
+token RETURN : 'return';
 
-            var rule = rules.Single();
+token OPENSBRACKET : '{';
+token CLOSESBRACKET : '}';
+token OPENPARENS : '(';
+token CLOESPARENS : ')';
 
-            rule.RuleType.Should().Be(RuleType.Rule);
-            rule.Name.Should().Be("parameters");
 
-            rule.Alternatives.Count().Should().Be(1);
+";
 
-            var alt1 = rule.Alternatives[0];
+            var grammar = CUT.ProcessGrammarRules(source);
 
-            alt1.RuleClauses.Count().Should().Be(3);
+            grammar.Values.Count().Should().Be(9);
 
-            alt1.RuleClauses[0].Clause.Should().Be("OPENPARENS");
-            alt1.RuleClauses[0].IsLiteral.Should().BeFalse();
-            alt1.RuleClauses[0].Qualifier.Should().Be(ClauseQualifier.None);
-            alt1.RuleClauses[0].DelimiterInUse.Should().BeFalse();
-            alt1.RuleClauses[0].QualifierArgument.Should().BeNull();
-            alt1.RuleClauses[0].RightQualifier.Should().Be(ClauseQualifier.None);
+        }
+
+        [TestMethod]
+        public void ReferenceLinkTest()
+        {
+
+            var source = @"   
+form foo : BAZ BAZ;
+form bar : foo | BAZ;
+token BAZ : 'baz';
+
+
+";
+
+            var grammar = CUT.ProcessGrammarRules(source);
+
             
-            alt1.RuleClauses[1].Clause.Should().Be("parameter");
-            alt1.RuleClauses[1].IsLiteral.Should().BeFalse();
-            alt1.RuleClauses[1].Qualifier.Should().Be(ClauseQualifier.Optional);
-            alt1.RuleClauses[1].DelimiterInUse.Should().BeTrue();
-            alt1.RuleClauses[1].QualifierArgument.Should().Be("COMMA");
-            alt1.RuleClauses[1].RightQualifier.Should().Be(ClauseQualifier.None);
-
-            alt1.RuleClauses[2].Clause.Should().Be("CLOESPARENS");
-            alt1.RuleClauses[2].IsLiteral.Should().BeFalse();
-            alt1.RuleClauses[2].Qualifier.Should().Be(ClauseQualifier.None);
-            alt1.RuleClauses[2].DelimiterInUse.Should().BeFalse();
-            alt1.RuleClauses[2].QualifierArgument.Should().BeNull();
-            alt1.RuleClauses[2].RightQualifier.Should().Be(ClauseQualifier.None);
-
-        }
-
-        [TestMethod]
-        public void LibraryTest()
-        {
-
-            var source = "token LIBRARY : 'library';";
-
-            var rules = CUT.BuildGrammarRules(source);
-
-            var rule = rules.Single();
-
-            rule.RuleType.Should().Be(RuleType.Token);
-            rule.Name.Should().Be("LIBRARY");
-
-            rule.Alternatives.Count().Should().Be(1);
-
-            var alt1 = rule.Alternatives[0];
-
-            alt1.RuleClauses.Count().Should().Be(1);
-
-            alt1.RuleClauses[0].Clause.Should().Be("library");
-            alt1.RuleClauses[0].IsLiteral.Should().BeTrue();
-            alt1.RuleClauses[0].Qualifier.Should().Be(ClauseQualifier.None);
-            alt1.RuleClauses[0].DelimiterInUse.Should().BeFalse();
-            alt1.RuleClauses[0].QualifierArgument.Should().BeNull();
-            alt1.RuleClauses[0].RightQualifier.Should().Be(ClauseQualifier.None);
-
-        }
-
-        [TestMethod]
-        public void IdentifierTest()
-        {
-
-            var source = "token IDENTIFIER : LETTER LETTER_OR_DIGIT*;";
-
-            var rules = CUT.BuildGrammarRules(source);
-
-            var rule = rules.Single();
-
-            rule.RuleType.Should().Be(RuleType.Token);
-            rule.Name.Should().Be("IDENTIFIER");
-
-            rule.Alternatives.Count().Should().Be(1);
-
-            var alt1 = rule.Alternatives[0];
-
-            alt1.RuleClauses.Count().Should().Be(2);
-
-            alt1.RuleClauses[0].Clause.Should().Be("LETTER");
-            alt1.RuleClauses[0].IsLiteral.Should().BeFalse();
-            alt1.RuleClauses[0].Qualifier.Should().Be(ClauseQualifier.None);
-            alt1.RuleClauses[0].DelimiterInUse.Should().BeFalse();
-            alt1.RuleClauses[0].QualifierArgument.Should().BeNull();
-            alt1.RuleClauses[0].RightQualifier.Should().Be(ClauseQualifier.None);
-
-            alt1.RuleClauses[1].Clause.Should().Be("LETTER_OR_DIGIT");
-            alt1.RuleClauses[1].IsLiteral.Should().BeFalse();
-            alt1.RuleClauses[1].Qualifier.Should().Be(ClauseQualifier.Optional);
-            alt1.RuleClauses[1].DelimiterInUse.Should().BeFalse();
-            alt1.RuleClauses[1].QualifierArgument.Should().BeNull();
-            alt1.RuleClauses[1].RightQualifier.Should().Be(ClauseQualifier.None);
 
         }
 

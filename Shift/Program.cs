@@ -13,20 +13,20 @@ namespace Shift
         static async Task Main(string[] args)
         {
 
-            var grammar = await File.ReadAllTextAsync("./Shift.ctrl");
+            //var grammar = await File.ReadAllTextAsync("./Shift.ctrl");
             
-            var parserService = new ParserService();
-            var context = parserService.BuildParseContext(grammar);
+            //var parserService = new ParserService();
+            //var context = parserService.BuildParseContext(grammar);
 
-            var exampleProgram = await File.ReadAllTextAsync("./Example.st");
+            //var exampleProgram = await File.ReadAllTextAsync("./Example.st");
 
-            var sourceNode = context
-                .SourceRules
-                .Single(x => x.Value.Name == "source")
-                .Value
-                ;
+            //var sourceNode = context
+            //    .SourceRules
+            //    .Single(x => x.Value.Name == "source")
+            //    .Value
+            //    ;
 
-            var parseTree = parserService.Parse(exampleProgram, sourceNode, context);
+            //var parseTree = parserService.Parse(exampleProgram, sourceNode, context);
 
         }
     
