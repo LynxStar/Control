@@ -1,8 +1,58 @@
 ﻿form source
 	: data
+	| library
 	;
 
 form data : DATA identifier OPENSBRACKET (field)* CLOSESBRACKET;
+
+form library : LIBRARY identifier OPENSBRACKET (methods)* CLOSESBRACKET;
+
+form method : signature block;
+
+form signature : typeDef OPENPARENS parameters CLOESPARENS;
+
+form parameters : parameter (COMMA parameter)*;
+
+form block : OPENSBRACKET (statement)* CLOSESBRACKET;
+
+form statement : declaration SEMICOLON;
+
+form declaration : type identifier initializer?
+
+form initializer : ASSIGNMENT expression
+
+form expression 
+	: assignment
+	| unary_expression
+	; 
+
+form assignment
+	: unary_expression ASSIGNMENT expression
+	;
+
+form unary_expression
+	: primary_expression
+	;
+
+form primary_expression
+	: literal
+	| declaration
+	;
+
+form declaration : typeDef;
+	
+form literal
+	: boolean
+	| string
+	| INTEGER
+	;
+	
+form boolean
+	: TRUE
+	| FALSE
+	;
+
+form string : STRING;
 
 form field : typeDef SEMICOLON;
 
@@ -13,15 +63,27 @@ form identifier : IDENTIFIER;
 
 discard COMMENT : `\/\/.*?((?=\n)|(?=\r\n))`;
 
+token STRING : `(["'])(?:(?=(\\?))\2.)*?\1`;
+
 token DATA : 'data' WHITESPACE;
+token LIBRARY : 'library' WHITESPACE;
 
 token OPENSBRACKET : '{';
 token CLOSESBRACKET : '}';
+token OPENPARENS : '(';
+token CLOESPARENS : ')';
 
 token SEMICOLON : ';';
+token COMMA : ',';
+
+token ASSIGNMENT : '=';
+
+token TRUE : 'true';
+token FALSE : 'false';
 
 token IDENTIFIER : LETTER (LETTER_OR_DIGIT)*;
 
+token INTEGER : DIGIT+;
 
 fragment LETTER     : `[a-zA-Z]` ;
 fragment DIGIT      : `[0-9]` ;
@@ -31,20 +93,6 @@ fragment LETTER_OR_DIGIT
 	: LETTER 
 	| DIGIT
 	;
-
-fragment ESC_OR_SAFE
-	: ESC 
-	| SAFECODEPOINT
-	;
-
-fragment ESC
-   : `\\` DOUBLEQUOTE
-   ;
-
-fragment SAFECODEPOINT
-   : `[^` DOUBLEQUOTE `]`
-   ;
-
 
 discard WHITESPACE 
 	: `[ \t\n\r]+`
