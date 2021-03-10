@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Control.Streams;
 
 namespace Control.Tests.Services.RuleServiceTests
 {
@@ -161,6 +162,19 @@ namespace Control.Tests.Services.RuleServiceTests
             innerClauseThree.ClauseType.Should().Be(ClauseType.Reference);
 
             stream.Index.Should().Be(29);
+        }
+
+        [TestMethod]
+        public void ClauseSupportEscapedEscapeCharacterTest()
+        {
+
+            var stream = new RulesStream { Source = "`\\\\`" };
+
+            var clause = CUT.CaptureClause(stream);
+
+            clause.Value.Should().Be("\\");
+            clause.ClauseType.Should().Be(ClauseType.Regex);
+
         }
 
     }

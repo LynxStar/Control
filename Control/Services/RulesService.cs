@@ -1,4 +1,5 @@
 ﻿using Control.Grammar;
+using Control.Streams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,67 +8,15 @@ using System.Text;
 namespace Control.Services
 {
 
-    public class RulesStream
-    {
-
-        public string Source { get; set; }
-        public int Index { get; set; }
-
-        public bool IsEndOfStream()
-        {
-            return Index == Source.Length;
-        }
-
-        public override string ToString()
-        {
-
-            if(IsEndOfStream())
-            {
-                return "@@@END_OF_STREAM@@@";
-            }
-
-            var past = String.Empty;
-            var current = Source[Index];
-            var preview = String.Empty;
-
-            if (Index > 0)
-            {
-                var startFrom = 0;
-
-                if (Index >= 10)
-                {
-                    startFrom = Index - 10;
-                }
-                past = Source.Substring(startFrom, Index - startFrom);
-
-            }
-
-            if(Index < Source.Length)
-            {
-
-                int remaining = Source.Length - Index;
-
-                if (remaining >= 10)
-                {
-                    remaining = 10;
-                }
-
-                preview = Source.Substring(Index + 1, remaining);
-
-            }
-
-            return $"{past}⇃{current}⇂{preview}";
-        }
-
-    }
-
     public class RulesService
     {
 
         List<char> Whitespace = new List<char> { ' ', '\r', '\n', '\t' };
         List<char> Terminator = new List<char> { ')', ';', '|' };
 
-        public Dictionary<string, Rule> ProcessGrammarRules(string grammarText)
+        private readonly ReferenceLinkerService referenceLinkerService = new ReferenceLinkerService();
+
+        public Dictionary<string, Rule> BuildRules(string grammarText)
         {
 
             var rules = new Dictionary<string, Rule>();
@@ -87,18 +36,7 @@ namespace Control.Services
 
             }
 
-            var clauseRules = rules
-                .Values
-                .SelectMany(x => x.Options)
-                .SelectMany(x => x.Clauses)
-                .Where(x => x.ClauseType == ClauseType.Reference)
-                ;
-
-            //Link rules
-            foreach (var clause in clauseRules)
-            {
-                clause.Reference = rules[clause.Value];
-            }
+            rules = referenceLinkerService.LinkRules(rules);
 
             return rules;
 
@@ -177,6 +115,7 @@ namespace Control.Services
                 "form" => RuleType.Form,
                 "token" => RuleType.Token,
                 "fragment" => RuleType.Fragment,
+                "discard" => RuleType.Discard,
                 _ => throw new Exception($"Unknown rule {typeString}")
             };
 
@@ -328,6 +267,11 @@ namespace Control.Services
                 stream.Index--;//The others assume the deliminating character was consumed, in this case we want to walk back
                 clause.Value = CaptureWord(stream);
                 clause.ClauseType = ClauseType.Reference;
+            }
+
+            if(!String.IsNullOrWhiteSpace(clause.Value))
+            {
+                clause.Value = clause.Value.Replace("\\\\", "\\");
             }
 
             return clause;

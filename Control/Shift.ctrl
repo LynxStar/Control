@@ -1,64 +1,63 @@
-﻿form source
+﻿rule source
 	: structure
 	| library
 	| service
 	;
 
-form structure : STRUCTURE identifier OPENSBRACKET field* CLOSESBRACKET;
+rule structure : STRUCTURE identifier OPENSBRACKET field* CLOSESBRACKET;
 
-form library : LIBRARY identifier OPENSBRACKET method* CLOSESBRACKET;
+rule library : LIBRARY identifier OPENSBRACKET method* CLOSESBRACKET;
 
-form service : SERVICE identifier OPENSBRACKET method* CLOSESBRACKET;
+rule service : SERVICE identifier OPENSBRACKET method* CLOSESBRACKET;
 
-form method : methodSignature block;
+rule method : methodSignature block;
 
-form methodSignature : type identifier parameters;
+rule methodSignature : type identifier parameters;
 
-form parameters : OPENPARENS parameter*&COMMA CLOESPARENS;
-form parameters : OPENPARENS parameter (COMMA OPENPARENS parameter)*
+rule parameters : OPENPARENS parameter*&COMMA CLOESPARENS;
 
-form parameter : type identifier;
+rule parameter : type identifier;
 
-form block : OPENSBRACKET statement* CLOSESBRACKET;
+rule block : OPENSBRACKET statement* CLOSESBRACKET;
 
-form statement : command SEMICOLON;
+rule statement : command SEMICOLON;
 
-form command
+rule command
 	: typeDef
 	| assignment
 	| expression
 	| return
 	;
 
-form return : RETURN expression;
+rule return : RETURN expression;
 
-form expression
+rule expression
 	: parensExpression
 	| binaryExpression
 	| value
 	;
 
-form assignment : assignable ASSIGNMENT expression;
+rule assignment : assignable ASSIGNMENT expression;
 
-form assignable 
+rule assignable 
 	: reference
 	| typeDef
 	;
 
-form reference 
+rule reference 
 	: identifier
 	;
 
-form value
+rule value
 	: reference
 	| constant
 	;
 
-form parensExpression : OPENPARENS expression CLOESPARENS;
+rule parensExpression : OPENPARENS expression CLOESPARENS;
 
-form binaryExpression : expression binaryOperator expression;
+rule binaryExpression : expression binaryOperator expression;
 
-form binaryOperator 
+rule binaryOperator 
 	: EQUALITY
 	| INEQUALITY
 	| GREATERTHAN
@@ -70,14 +69,14 @@ form binaryOperator
 	| NOT
 	;
 
-form field : typeDef SEMICOLON;
+rule field : typeDef SEMICOLON;
 
-form typeDef : type identifier;
+rule typeDef : type identifier;
 
-form type : IDENTIFIER;
-form identifier : IDENTIFIER;
+rule type : IDENTIFIER;
+rule identifier : IDENTIFIER;
 
-form constant
+rule constant
     : STRING
     | NUMBER
     ;

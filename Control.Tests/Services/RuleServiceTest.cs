@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Control.Streams;
 
 namespace Control.Tests.Services
 {
@@ -44,6 +45,27 @@ namespace Control.Tests.Services
         }
 
         [TestMethod]
+        public void DiscardTest()
+        {
+
+            var stream = new RulesStream { Source = "discard COMMENT : `\\/\\/.*?((?=\n)|(?=\r\n))`;" };
+
+            var rule = CUT.CaptureRule(stream);
+
+            rule.RuleType.Should().Be(RuleType.Discard);
+            rule.Name.Should().Be("COMMENT");
+
+            var options = rule.Options;
+
+            options.Count().Should().Be(1);
+
+            var option1 = options[0];
+            option1.Clauses.First().Value.Should().Be("\\/\\/.*?((?=\n)|(?=\r\n))");
+            option1.Clauses.First().ClauseType.Should().Be(ClauseType.Regex);
+
+        }
+
+        [TestMethod]
         public void ProcessGrammarTest()
         {
 
@@ -63,7 +85,7 @@ token CLOESPARENS : ')';
 
 ";
 
-            var grammar = CUT.ProcessGrammarRules(source);
+            var grammar = CUT.BuildRules(source);
 
             grammar.Values.Count().Should().Be(9);
 
@@ -81,9 +103,7 @@ token BAZ : 'baz';
 
 ";
 
-            var grammar = CUT.ProcessGrammarRules(source);
-
-            
+            var grammar = CUT.BuildRules(source);
 
         }
 

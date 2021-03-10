@@ -18,11 +18,7 @@ namespace Control
         public async Task Run()
         {
 
-            var grammar = await File.ReadAllTextAsync("./Shift.ctrl");
-
-            var grammarRulesService = new RulesService();
-
-            //var rules = grammarRulesService.BuildGrammarRules(grammar);
+            
             
 
         }

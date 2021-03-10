@@ -10,23 +10,21 @@ namespace Shift
     public class Program
     {
 
+        private static readonly String EntryFormKey = "source";
+
         static async Task Main(string[] args)
         {
 
-            //var grammar = await File.ReadAllTextAsync("./Shift.ctrl");
-            
-            //var parserService = new ParserService();
-            //var context = parserService.BuildParseContext(grammar);
+            var grammarService = new GrammarService();
 
-            //var exampleProgram = await File.ReadAllTextAsync("./Example.st");
+            var grammar = await File.ReadAllTextAsync("./Shift.ctrl");
+            var source = await File.ReadAllTextAsync("./structureTest.st");
 
-            //var sourceNode = context
-            //    .SourceRules
-            //    .Single(x => x.Value.Name == "source")
-            //    .Value
-            //    ;
+            var rootNode = grammarService.ConvertToAST(grammar, source, EntryFormKey);
 
-            //var parseTree = parserService.Parse(exampleProgram, sourceNode, context);
+            var mapper = new SyntaxMapper();
+
+            var app = mapper.MapApplication(rootNode);
 
         }
     
