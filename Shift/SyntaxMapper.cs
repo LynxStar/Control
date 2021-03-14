@@ -19,10 +19,15 @@ namespace Shift
 
             foreach(var child in node.SyntaxNodes)
             {
-
-                if(child.Rule.Name == "data")
+                //atm it saves it into the known types so nothing to really do with these
+                if (child.Rule.Name == "data")
                 {
-                    var data = MapData(child, app);
+                    MapData(child, app);
+                }
+
+                if(child.Rule.Name == "library")
+                {
+                    MapLibrary(child, app);
                 }
 
             }
@@ -36,6 +41,7 @@ namespace Shift
 
             var data = new Data();
 
+            data.Source = "User Defined";
             data.Identifier = node.Identifier.TokenValue;
 
             app.UsedTypes.Add(data.Identifier, data);
@@ -48,6 +54,17 @@ namespace Shift
                 ;
 
             return data;
+
+        }
+
+        public Library MapLibrary(SyntaxNode node, Application app)
+        {
+
+            var library = new Library();
+
+
+
+            return library;
 
         }
 

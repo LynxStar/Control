@@ -17,7 +17,7 @@ namespace Shift
 
             var grammarService = new GrammarService();
 
-            var grammar = await File.ReadAllTextAsync("./Shift.ctrl");
+            var grammar = ShiftGrammar.FullGrammar;
             var source = await File.ReadAllTextAsync("./structureTest.st");
 
             var rootNode = grammarService.ConvertToAST(grammar, source, EntryFormKey);

@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace Shift.Aspects
 {
-    public class ShiftType
+    
+    public class Library : ShiftType
     {
-        public string Source { get; set; }
-        public string Identifier { get; set; }
     }
 }

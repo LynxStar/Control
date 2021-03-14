@@ -5,41 +5,69 @@
 
 form data : DATA identifier OPENSBRACKET (field)* CLOSESBRACKET;
 
-form library : LIBRARY identifier OPENSBRACKET (methods)* CLOSESBRACKET;
+form library : LIBRARY identifier OPENSBRACKET (method)* CLOSESBRACKET;
 
 form method : signature block;
 
-form signature : typeDef OPENPARENS parameters CLOESPARENS;
+form signature : typeDef OPENPARENS (parameters)? CLOESPARENS;
 
 form parameters : parameter (COMMA parameter)*;
 
-form block : OPENSBRACKET (statement)* CLOSESBRACKET;
+form parameter : typeDef;
 
-form statement : declaration SEMICOLON;
+form block : OPENSBRACKET (statement SEMICOLON)* CLOSESBRACKET;
 
-form declaration : type identifier initializer?
+form statement 
+	: declaration		
+	| assignment
+	| return_expression
+	| call
+	;
 
-form initializer : ASSIGNMENT expression
+form declaration : type identifier (initializer)?;
+
+form initializer : ASSIGNMENT expression;
+
+form return_expression : RETURN expression;
 
 form expression 
-	: assignment
-	| unary_expression
-	; 
+	: unary_expression
+	;
+
 
 form assignment
-	: unary_expression ASSIGNMENT expression
+	: accessor ASSIGNMENT expression
 	;
+
+form accessor : identifier (DOT identifier)*;
 
 form unary_expression
 	: primary_expression
 	;
 
 form primary_expression
-	: literal
-	| declaration
+	: parens_expression
+	| literal
+	| chain
 	;
 
-form declaration : typeDef;
+form parens_expression : OPENPARENS (expression)? CLOESPARENS;
+
+form call : expression invocation;
+
+form chain : chain_part (DOT chain_part)*;
+
+form chain_part
+	: invocation
+	| identifier
+	| literal
+	;
+
+form invocation : OPENPARENS (arguments)? CLOESPARENS;
+
+form arguments : argument (COMMA argument)*;
+
+form argument : expression;
 	
 form literal
 	: boolean
@@ -68,11 +96,14 @@ token STRING : `(["'])(?:(?=(\\?))\2.)*?\1`;
 token DATA : 'data' WHITESPACE;
 token LIBRARY : 'library' WHITESPACE;
 
+token RETURN : 'return';
+
 token OPENSBRACKET : '{';
 token CLOSESBRACKET : '}';
 token OPENPARENS : '(';
 token CLOESPARENS : ')';
 
+token DOT : '.';
 token SEMICOLON : ';';
 token COMMA : ',';
 
@@ -83,7 +114,7 @@ token FALSE : 'false';
 
 token IDENTIFIER : LETTER (LETTER_OR_DIGIT)*;
 
-token INTEGER : DIGIT+;
+token INTEGER : (DIGIT)+;
 
 fragment LETTER     : `[a-zA-Z]` ;
 fragment DIGIT      : `[0-9]` ;

@@ -13,7 +13,7 @@ namespace Control.Services
     public class LexerService
     {
 
-        public LinkedList<Token> Tokenize(string source, Dictionary<string, Rule> rules)
+        public LinkedList<Token> Tokenize(string source, Dictionary<string, Rule> rules, bool dumpStream)
         {
 
             var tokenStream = new LinkedList<Token>();
@@ -91,7 +91,10 @@ namespace Control.Services
 
             }
 
-            DumpStream(tokenStream);
+            if(dumpStream)
+            {
+                DumpStream(tokenStream);
+            }
 
             var postDiscardStream = new LinkedList<Token>();
 
@@ -115,20 +118,26 @@ namespace Control.Services
 
             if(stream.Any(x => x.Rule is null))
             {
-                throw new Exception("wtf bill?");
+                //throw new Exception("wtf bill?");
             }
 
             foreach (var node in stream)
             {
 
-                if (node.Rule.RuleType == RuleType.Discard)
+                if (node?.Rule?.RuleType == RuleType.Discard)
                 {
                     formattedBuilder.Append(node.Capture);
                 }
                 else
                 {
-                    formattedBuilder.Append($"{{{node.Rule.Name}}}");
-                    rawBuilder.AppendLine($"{{{node.Rule.Name}}}");
+
+                    var name = node?.Rule?.Name is not null
+                        ? node.Rule.Name
+                        : $"UNLINKED:[{node.Capture}]"
+                        ;
+
+                    formattedBuilder.Append($"{{{name}}}");
+                    rawBuilder.AppendLine($"{{{name}}}");
                 }
 
             }

@@ -11,7 +11,7 @@ namespace Control.Services
     public class GrammarService
     {
 
-        public SyntaxNode ConvertToAST(string grammar, string source, string entryFormKey)
+        public Dictionary<string, Rule> ConvertToBakedRules(string grammar)
         {
 
             var grammarRulesService = new RulesService();
@@ -22,9 +22,27 @@ namespace Control.Services
 
             var bakedRules = fragmentService.BakeTokens(rules);
 
+            return bakedRules;
+
+        }
+
+        public LinkedList<Token> ConvertToTokenStream(string source, Dictionary<string, Rule> rules, bool dumpStream = false)
+        {
+
             var lexerService = new LexerService();
 
-            var tokenStream = lexerService.Tokenize(source, bakedRules);
+            var tokenStream = lexerService.Tokenize(source, rules, dumpStream);
+
+            return tokenStream;
+
+        }
+
+        public SyntaxNode ConvertToAST(string grammar, string source, string entryFormKey)
+        {
+
+            var rules = ConvertToBakedRules(grammar);
+
+            var tokenStream = ConvertToTokenStream(source, rules, true);
 
             var parserService = new ParserService();
 

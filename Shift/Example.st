@@ -1,4 +1,4 @@
-﻿structure datastruct
+﻿data datastruct
 {
     
     string bob;
@@ -36,16 +36,31 @@ library blue
     int sid()
     {
 
-        //Let's throw this in here for good measure
+        //declaration
+        int f;
+        //declaration with initializer
+        int g = 0;
+        datastruct baz = new;
+        var beeds = new datastruct(7);
 
-        var a = "this is anotehr string";//This will be a useful test case when testing out inference
-        int 3 = "";
+        
+        datastruct foo;//C# equivilent to var foo = new datastruct();
 
-        //make sure we get some default values in there too
-        string b;
-        string c;
+        //assignment
+        g = 8;//Literal
+        g = f;//Identifier
+        g = new();//expression
+        
+        foo.bob = 8;//accessor chain for assignment
 
-        return 1;
+        //expressions
+        ////unary expressions
+        /////primary expressions
+
+        (sid).bob();
+
+        //return_expression
+        return g;
     }
 
 }
