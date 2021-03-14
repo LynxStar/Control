@@ -96,6 +96,7 @@ namespace Shift.Tests
 
             tokenStream.First.Value.Rule.Name.Should().Be("RETURN");
             tokenStream.First.Next.Value.Rule.Name.Should().Be("STRING");
+            tokenStream.First.Next.Next.Value.Rule.Name.Should().Be("SEMICOLON");
 
 
         }
