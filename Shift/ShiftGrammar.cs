@@ -76,7 +76,7 @@ form source
 		public static string method_forms => @"
 form method : signature block;
 
-form signature : typeDef OPENPARENS (parameters)? CLOESPARENS;
+form signature : typeDef OPENPARENS (parameters)? CLOSEPARENS;
 
 form parameters : parameter (COMMA parameter)*;
 
@@ -120,7 +120,7 @@ form primary_expression
 	| chain
 	;
 
-form parens_expression : OPENPARENS (expression)? CLOESPARENS;
+form parens_expression : OPENPARENS (expression)? CLOSEPARENS;
 ";
 
 		public static string call => "form call : expression invocation;";
@@ -136,7 +136,7 @@ form chain_part
 ";
 
 		public static string invocation => @"
-form invocation : OPENPARENS (arguments)? CLOESPARENS;
+form invocation : OPENPARENS (arguments)? CLOSEPARENS;
 
 form arguments : argument (COMMA argument)*;
 
@@ -181,13 +181,13 @@ token FALSE : 'false';
 token OPENSBRACKET : '{';
 token CLOSESBRACKET : '}';
 token OPENPARENS : '(';
-token CLOESPARENS : ')';
+token CLOSEPARENS : ')';
 
 token DOT : '.';
 token SEMICOLON : ';';
 token COMMA : ',';
 
-token ASSIGNMENT : '=>';
+token ASSIGNMENT : '=';
 ";
 
 		public static string STRING => "token STRING : `\"((?:\\\\.|[^\\\\\"])*)\"`;";
