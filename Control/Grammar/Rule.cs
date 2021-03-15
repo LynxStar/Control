@@ -18,7 +18,7 @@ namespace Control.Grammar
         {
 
             var output = String.IsNullOrEmpty(Regex)
-                ? "UNBAKED"
+                ? Options.Select(x => x.ToString()).Aggregate((x,y) => $"{x} | {y}")
                 : Regex
                 ;
 

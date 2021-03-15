@@ -215,7 +215,7 @@ namespace Control.Services
             }
             else
             {
-                node.SyntaxNodes = matches.First();
+                node.SyntaxNodes = matches.FirstOrDefault() ?? Enumerable.Empty<SyntaxNode>().ToList();
             }
 
             return node;

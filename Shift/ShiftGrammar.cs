@@ -12,6 +12,7 @@ namespace Shift
 		public static string FullGrammar => @$"
 
 {source}
+{aspect}
 
 {data}
 
@@ -60,8 +61,10 @@ namespace Shift
 
 		#region Forms
 
-		public static string source => @"
-form source
+		public static string source => "form source : (aspect)*;";
+
+		public static string aspect => @"
+form aspect
 	: data
 	| library
 	;

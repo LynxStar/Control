@@ -9,5 +9,6 @@ namespace Shift.Aspects
     
     public class Library : ShiftType
     {
+        public List<Method> Methods { get; set; } = new List<Method>();
     }
 }

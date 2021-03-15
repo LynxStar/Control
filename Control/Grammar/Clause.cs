@@ -14,5 +14,21 @@ namespace Control.Grammar
         public CaptureGroup CaptureGroup { get; set; }
         public ClauseType ClauseType { get; set; }
 
+        public override string ToString()
+        {
+
+            var format = CaptureGroup is not null
+                ? "({0})" + CaptureGroup.Modifier
+                : "{0}"
+                ;
+
+            var value = CaptureGroup is not null
+                ? CaptureGroup.ToString()
+                : Value
+                ;
+
+            return String.Format(format, value);
+        }
+
     }
 }

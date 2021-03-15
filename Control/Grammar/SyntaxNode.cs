@@ -14,6 +14,10 @@ namespace Control.Grammar
         public string Capture { get; set; }
         public List<SyntaxNode> SyntaxNodes { get; set; } = new List<SyntaxNode>();
 
+        public override string ToString()
+        {
+            return $"{Rule.Name}:{Capture} - Nodes: {SyntaxNodes.Count()}";
+        }
 
         //Convenience Methods
 
@@ -22,10 +26,16 @@ namespace Control.Grammar
             .SyntaxNodes
             ;
 
+        public SyntaxNode Aspect => this["aspect"];
         public SyntaxNode Identifier => this["identifier"];
         public SyntaxNode Field => this["field"];
         public SyntaxNode TypeDef => this["typeDef"];
         public SyntaxNode Type => this["type"];
+        public SyntaxNode Method => this["method"];
+        public SyntaxNode Signature => this["signature"];
+        public SyntaxNode Block => this["block"];
+        public SyntaxNode Parameter => this["parameter"];
+        public SyntaxNode Statement => this["statement"];
 
         public string TokenValue => Capture is not null
             ? Capture
