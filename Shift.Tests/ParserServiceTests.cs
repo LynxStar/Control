@@ -215,6 +215,64 @@ library blue
 
         }
 
+        [TestMethod]
+        public void DeclarationStatementTest()
+        {
+
+            var source = "int f;";
+
+            var node = ASTTester(source, "statement");
+
+            var declaration = node
+                .Declaration
+                ;
+
+            declaration.Type.TokenValue.Should().Be("int");
+            declaration.Identifier.TokenValue.Should().Be("f");
+
+        }
+
+        [TestMethod]
+        public void DeclarationWithInitializerTest()
+        {
+
+            var source = "int g = 0;";
+
+            var node = ASTTester(source, "statement");
+
+            var declaration = node
+                .Declaration
+                ;
+
+            declaration.Type.TokenValue.Should().Be("int");
+            declaration.Identifier.TokenValue.Should().Be("g");
+
+            declaration.CGR.First().Expression.UnaryExpression.PrimaryExpression.Literal["INTEGER"].Capture.Should().Be("0");
+
+        }
+
+        [TestMethod]
+        public void DeclarationWithInitializerInvocationCallTest()
+        {
+
+            var source = "var beeds = new datastruct(7);";
+
+            //var beeds = new<datastruct>(7);
+            //new datastruct(7);
+
+            var node = ASTTester(source, "statement");
+
+            var declaration = node
+                .Declaration
+                ;
+
+            declaration.Type.TokenValue.Should().Be("var");
+            declaration.Identifier.TokenValue.Should().Be("beeds");
+
+            declaration.CGR.First().Expression.UnaryExpression.PrimaryExpression.Literal["INTEGER"].Capture.Should().Be("0");
+
+        }
+
     }
 
 }

@@ -119,11 +119,15 @@ form unary_expression
 
 form primary_expression
 	: parens_expression
+	| new_expression
 	| literal
 	| chain
 	;
 
 form parens_expression : OPENPARENS (expression)? CLOSEPARENS;
+
+form new_expression : NEW IDENTIFIER invocation;
+
 ";
 
 		public static string call => "form call : expression invocation;";
@@ -176,6 +180,7 @@ token LIBRARY : 'library' WHITESPACE;
 
 token RETURN : 'return';
 
+token NEW : 'new';
 token TRUE : 'true';
 token FALSE : 'false';
 ";

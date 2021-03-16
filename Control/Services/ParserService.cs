@@ -29,6 +29,11 @@ namespace Control.Services
 
             var node = ParseRule(entryRule, context);
 
+            if(context.Token.Next is not null)
+            {
+                throw new Exception("Apparently you didn't parse everything, wtf mate?");
+            }
+
             DumpAST(node);
 
             return node;
@@ -155,10 +160,13 @@ namespace Control.Services
             while (true)
             {
 
+                var startingToken = context.Token;
+
                 var optionNodes = TryOption(clause.CaptureGroup, context);
 
                 if (optionNodes is null)
                 {
+                    context.Token = startingToken;
                     break;
                 }
 
@@ -173,7 +181,6 @@ namespace Control.Services
 
             if (required && !matches.Any())
             {
-                context.Token = currentToken;
                 return null;
             }
 

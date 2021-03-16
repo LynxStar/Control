@@ -37,6 +37,9 @@ namespace Control.Grammar
         public SyntaxNode Parameter => this["parameter"];
         public SyntaxNode Statement => this["statement"];
 
+        public SyntaxNode Declaration => this["declaration"];
+        public SyntaxNode Initializer => this["initializer"];
+
 
         public SyntaxNode Expression => this["expression"];
         public SyntaxNode ReturnExpression => this["return_expression"];
