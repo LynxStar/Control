@@ -37,6 +37,14 @@ namespace Control.Grammar
         public SyntaxNode Parameter => this["parameter"];
         public SyntaxNode Statement => this["statement"];
 
+
+        public SyntaxNode Expression => this["expression"];
+        public SyntaxNode ReturnExpression => this["return_expression"];
+        public SyntaxNode UnaryExpression => this["unary_expression"];
+        public SyntaxNode PrimaryExpression => this["primary_expression"];
+
+        public SyntaxNode Literal => this["literal"];
+
         public string TokenValue => Capture is not null
             ? Capture
             : SyntaxNodes.Single().Capture
