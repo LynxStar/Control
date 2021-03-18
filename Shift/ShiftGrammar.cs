@@ -126,7 +126,7 @@ form primary_expression
 
 form parens_expression : OPENPARENS (expression)? CLOSEPARENS;
 
-form new_expression : NEW IDENTIFIER invocation;
+form new_expression : NEW identifier invocation;
 
 ";
 

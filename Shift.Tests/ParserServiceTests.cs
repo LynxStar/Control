@@ -219,7 +219,7 @@ library blue
         public void DeclarationStatementTest()
         {
 
-            var source = "int f;";
+            var source = "int f";
 
             var node = ASTTester(source, "statement");
 
@@ -236,7 +236,7 @@ library blue
         public void DeclarationWithInitializerTest()
         {
 
-            var source = "int g = 0;";
+            var source = "int g = 0";
 
             var node = ASTTester(source, "statement");
 
@@ -252,10 +252,51 @@ library blue
         }
 
         [TestMethod]
+        public void NewExpressionTest()
+        {
+
+            var source = "new penguin(6, 7, 8)";
+
+            var node = ASTTester(source, "new_expression");
+
+            node.Identifier.TokenValue.Should().Be("penguin");
+
+            var expressions = node
+                .Invocation
+                .ArgumentExpressions
+                ;
+
+            expressions[0].UnaryExpression.PrimaryExpression.Literal["INTEGER"].Capture.Should().Be("6");
+            expressions[1].UnaryExpression.PrimaryExpression.Literal["INTEGER"].Capture.Should().Be("7");
+            expressions[2].UnaryExpression.PrimaryExpression.Literal["INTEGER"].Capture.Should().Be("8");
+
+        }
+
+        [TestMethod]
+        public void InvocationTest()
+        {
+
+            var source = "(7)";
+
+            //var beeds = new<datastruct>(7);
+            //new datastruct(7);
+
+            var node = ASTTester(source, "invocation");
+
+            var expressions = node
+                .ArgumentExpressions
+                ;
+
+            expressions[0].UnaryExpression.PrimaryExpression.Literal["INTEGER"].Capture.Should().Be("7");
+
+        }
+
+
+        [TestMethod]
         public void DeclarationWithInitializerInvocationCallTest()
         {
 
-            var source = "var beeds = new datastruct(7);";
+            var source = "var beeds = new datastruct(7)";
 
             //var beeds = new<datastruct>(7);
             //new datastruct(7);
@@ -269,7 +310,11 @@ library blue
             declaration.Type.TokenValue.Should().Be("var");
             declaration.Identifier.TokenValue.Should().Be("beeds");
 
-            declaration.CGR.First().Expression.UnaryExpression.PrimaryExpression.Literal["INTEGER"].Capture.Should().Be("0");
+            var newExpression = declaration.CGR.First().Expression.UnaryExpression.PrimaryExpression.NewExpression;
+
+            newExpression.Identifier.TokenValue.Should().Be("datastruct");
+
+            newExpression.Invocation.ArgumentExpressions[0].UnaryExpression.PrimaryExpression.Literal["INTEGER"].Capture.Should().Be("7");
 
         }
 

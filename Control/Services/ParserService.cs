@@ -29,7 +29,7 @@ namespace Control.Services
 
             var node = ParseRule(entryRule, context);
 
-            if(context.Token.Next is not null)
+            if(context.Token is not null)
             {
                 throw new Exception("Apparently you didn't parse everything, wtf mate?");
             }
@@ -112,7 +112,6 @@ namespace Control.Services
 
             foreach(var clause in option.Clauses)
             {
-
                 var node = MatchClause(clause, context);
 
                 if(node is null)
@@ -149,8 +148,6 @@ namespace Control.Services
 
         private SyntaxNode MatchCaptureGroup(Clause clause, ParseContext context)
         {
-
-            var currentToken = context.Token;
 
             var required = clause.CaptureGroup.Modifier is CaptureModifier.None or CaptureModifier.OneOrMore;
             var allowMultiple = clause.CaptureGroup.Modifier is CaptureModifier.OneOrMore or CaptureModifier.Optional;
@@ -237,6 +234,11 @@ namespace Control.Services
             }
             else if(reference.RuleType == RuleType.Token)
             {
+
+                if(context.Token is null)
+                {
+                    return null;
+                }
 
                 var token = context.Token.Value;
 

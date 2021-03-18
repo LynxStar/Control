@@ -37,6 +37,30 @@ namespace Control.Grammar
         public SyntaxNode Parameter => this["parameter"];
         public SyntaxNode Statement => this["statement"];
 
+        public List<SyntaxNode> ArgumentExpressions
+        {
+            get
+            {
+                var arguments = CGR.First();
+
+                var argExpressions = new List<SyntaxNode>();
+
+                var first = arguments.Argument;
+
+                var theRest = arguments.CGR.Select(x => x.Argument);
+
+                argExpressions.Add(first);
+                argExpressions.AddRange(theRest);
+
+                return argExpressions
+                    .Select(x => x.Expression)
+                    .ToList()
+                    ;
+            }
+        }
+
+        public SyntaxNode Argument => this["argument"];
+
         public SyntaxNode Declaration => this["declaration"];
         public SyntaxNode Initializer => this["initializer"];
 
@@ -45,6 +69,9 @@ namespace Control.Grammar
         public SyntaxNode ReturnExpression => this["return_expression"];
         public SyntaxNode UnaryExpression => this["unary_expression"];
         public SyntaxNode PrimaryExpression => this["primary_expression"];
+        public SyntaxNode NewExpression => this["new_expression"];
+
+        public SyntaxNode Invocation => this["invocation"];
 
         public SyntaxNode Literal => this["literal"];
 
