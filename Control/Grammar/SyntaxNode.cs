@@ -37,41 +37,99 @@ namespace Control.Grammar
         public SyntaxNode Parameter => this["parameter"];
         public SyntaxNode Statement => this["statement"];
 
-        public List<SyntaxNode> ArgumentExpressions
+        public List<SyntaxNode> OneOrMany(Func<SyntaxNode, SyntaxNode> selector)
+        {
+
+            var repeats = new List<SyntaxNode>();
+
+            var first = selector(this);
+
+            var theRest = CGR.Select(selector);
+
+            repeats.Add(first);
+            repeats.AddRange(theRest);
+
+            return repeats
+                .ToList()
+                ;
+        }
+
+        public List<SyntaxNode> InvocationArgExpressions
         {
             get
             {
-                var arguments = CGR.First();
 
-                var argExpressions = new List<SyntaxNode>();
+                //incoming invocation
+                //Grab CGR for arguements
+                //Grab inner
+                //Expand to many
+                //Project to expression
 
-                var first = arguments.Argument;
-
-                var theRest = arguments.CGR.Select(x => x.Argument);
-
-                argExpressions.Add(first);
-                argExpressions.AddRange(theRest);
-
-                return argExpressions
+                return CGR
+                    .First()
+                    .OneOrMany(x => x.Argument)
                     .Select(x => x.Expression)
                     .ToList()
                     ;
             }
         }
 
+        public List<SyntaxNode> Chain
+        {
+            get
+            {
+
+                return CGR
+                    .First()
+                    .SyntaxNodes
+                    .ToList()
+                    ;
+            }
+        }
+
+        public SyntaxNode Arguments => CGR.First();
         public SyntaxNode Argument => this["argument"];
 
         public SyntaxNode Declaration => this["declaration"];
         public SyntaxNode Initializer => this["initializer"];
 
 
+        public SyntaxNode Assignment => this["assignment"];
+        public List<string> Accessor
+        {
+            get
+            {
+
+                return this["accessor"]
+                    .OneOrMany(x => x.Identifier)
+                    .Select(x => x.TokenValue)
+                    .ToList()
+                    ;
+            }
+        }
+
+
         public SyntaxNode Expression => this["expression"];
         public SyntaxNode ReturnExpression => this["return_expression"];
         public SyntaxNode UnaryExpression => this["unary_expression"];
-        public SyntaxNode PrimaryExpression => this["primary_expression"];
+        public SyntaxNode MainExpression => this["main_expression"];
+        public SyntaxNode ExpressionStart => this["expression_start"];
         public SyntaxNode NewExpression => this["new_expression"];
+        public SyntaxNode ExpressionChain => this["expression_chain"];
+        public SyntaxNode MemberAccess => this["member_access"];
+
 
         public SyntaxNode Invocation => this["invocation"];
+
+        public SyntaxNode ExpToStart => UnaryExpression
+                .MainExpression
+                .ExpressionStart
+                ;
+
+        public SyntaxNode BasicLiteral => Expression
+                .ExpToStart
+                .Literal
+                ;
 
         public SyntaxNode Literal => this["literal"];
 

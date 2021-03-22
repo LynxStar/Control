@@ -26,12 +26,7 @@ namespace Shift
 {assignment}
 {accessor}
 {expressionTypes}
-{call}
 
-
-
-
-{chains}
 
 {invocation}
 	
@@ -93,7 +88,7 @@ form statement
 	: declaration		
 	| assignment
 	| return_expression
-	| call
+	| expression
 	;
 ";
 
@@ -114,15 +109,24 @@ form expression
 	;
 
 form unary_expression
-	: primary_expression
+	: main_expression
 	;
 
-form primary_expression
-	: parens_expression
+form main_expression : expression_start (expression_chain)* ;
+
+form expression_start
+	: literal
+	| identifier
+	| parens_expression
 	| new_expression
-	| literal
-	| chain
 	;
+
+form expression_chain
+	: member_access 
+	| invocation
+	;
+
+form member_access : DOT identifier;
 
 form parens_expression : OPENPARENS (expression)? CLOSEPARENS;
 
@@ -130,17 +134,6 @@ form new_expression : NEW identifier invocation;
 
 ";
 
-		public static string call => "form call : expression invocation;";
-
-		public static string chains => @"
-form chain : chain_part (DOT chain_part)*;
-
-form chain_part
-	: invocation
-	| identifier
-	| literal
-	;
-";
 
 		public static string invocation => @"
 form invocation : OPENPARENS (arguments)? CLOSEPARENS;
