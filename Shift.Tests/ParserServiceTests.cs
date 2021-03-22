@@ -300,7 +300,7 @@ library blue
             declaration.Type.TokenValue.Should().Be("var");
             declaration.Identifier.TokenValue.Should().Be("beeds");
 
-            var newExpression = declaration.CGR.First().Expression.UnaryExpression.ExpressionStart.NewExpression;
+            var newExpression = declaration.CGR.First().Expression.UnaryExpression.MainExpression.ExpressionStart.NewExpression;
 
             newExpression.Identifier.TokenValue.Should().Be("datastruct");
 
