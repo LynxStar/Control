@@ -67,7 +67,7 @@ namespace Shift.Tests
 
             var node = ASTTester(source, "expression");
 
-            node.ExpToStart.Literal["INTEGER"].Capture.Should().Be("7");
+            node.UnaryToStart.Literal["INTEGER"].Capture.Should().Be("7");
 
 
         }
@@ -263,9 +263,9 @@ library blue
                 .InvocationArgExpressions
                 ;
 
-            expressions[0].ExpToStart.Literal["INTEGER"].Capture.Should().Be("6");
-            expressions[1].ExpToStart.Literal["INTEGER"].Capture.Should().Be("7");
-            expressions[2].ExpToStart.Literal["INTEGER"].Capture.Should().Be("8");
+            expressions[0].UnaryToStart.Literal["INTEGER"].Capture.Should().Be("6");
+            expressions[1].UnaryToStart.Literal["INTEGER"].Capture.Should().Be("7");
+            expressions[2].UnaryToStart.Literal["INTEGER"].Capture.Should().Be("8");
 
         }
 
@@ -281,7 +281,7 @@ library blue
                 .InvocationArgExpressions
                 ;
 
-            expressions[0].ExpToStart.Literal["INTEGER"].Capture.Should().Be("7");
+            expressions[0].UnaryToStart.Literal["INTEGER"].Capture.Should().Be("7");
 
         }
 
@@ -300,11 +300,11 @@ library blue
             declaration.Type.TokenValue.Should().Be("var");
             declaration.Identifier.TokenValue.Should().Be("beeds");
 
-            var newExpression = declaration.CGR.First().Expression.UnaryExpression.MainExpression.ExpressionStart.NewExpression;
+            var newExpression = declaration.CGR.First().Expression.UnaryToStart.NewExpression;
 
             newExpression.Identifier.TokenValue.Should().Be("datastruct");
 
-            newExpression.Invocation.InvocationArgExpressions[0].ExpToStart.Literal["INTEGER"].Capture.Should().Be("7");
+            newExpression.Invocation.InvocationArgExpressions[0].UnaryToStart.Literal["INTEGER"].Capture.Should().Be("7");
 
         }
 
@@ -350,8 +350,29 @@ library blue
                 ;
 
             mainExpression.ExpressionStart.Identifier.TokenValue.Should().Be("bob");
-            mainExpression.Chain[0].Invocation.InvocationArgExpressions[0].ExpToStart.Literal["INTEGER"].Capture.Should().Be("7");
+            mainExpression.Chain[0].Invocation.InvocationArgExpressions[0].UnaryToStart.Literal["INTEGER"].Capture.Should().Be("7");
 
+
+        }
+
+        [TestMethod]
+        public void SidBobParenExpressionTest()
+        {
+
+            var source = "(sid).bob()";
+
+            var node = ASTTester(source, "statement");
+
+            var mainExpression = node
+                .Expression
+                .UnaryExpression
+                .MainExpression
+                ;
+
+            mainExpression.ExpressionStart.ParenthesesExpression.UnaryToStart.Identifier.TokenValue.Should().Be("sid");
+
+            mainExpression.Chain[0].MemberAccess.Identifier.TokenValue.Should().Be("bob");
+            var foo = mainExpression.CGR.Count().Should().Be(2);
 
         }
 

@@ -115,19 +115,25 @@ namespace Control.Grammar
         public SyntaxNode MainExpression => this["main_expression"];
         public SyntaxNode ExpressionStart => this["expression_start"];
         public SyntaxNode NewExpression => this["new_expression"];
+        public SyntaxNode ParenthesesExpression => this["parens_expression"].CGR.First();
         public SyntaxNode ExpressionChain => this["expression_chain"];
         public SyntaxNode MemberAccess => this["member_access"];
 
 
         public SyntaxNode Invocation => this["invocation"];
 
-        public SyntaxNode ExpToStart => UnaryExpression
+        public SyntaxNode ExpToStart => Expression
+                .UnaryExpression
                 .MainExpression
                 .ExpressionStart
                 ;
 
-        public SyntaxNode BasicLiteral => Expression
-                .ExpToStart
+        public SyntaxNode UnaryToStart => UnaryExpression
+                .MainExpression
+                .ExpressionStart
+                ;
+
+        public SyntaxNode BasicLiteral => ExpToStart
                 .Literal
                 ;
 
