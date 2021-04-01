@@ -83,5 +83,25 @@ data datastruct
 
         }
 
+        [TestMethod]
+        public void SignatureTest()
+        {
+
+            var source = "int bob(bool f, string a, pig honk)";
+
+            var signature = ConcreteMapper<Signature>(source, "signature");
+
+            signature.TypeDef.Type.IDENTIFIER.Should().Be("int");
+            signature.TypeDef.Identifier.IDENTIFIER.Should().Be("bob");
+
+            signature.Parameters.Parameter.TypeDef.Type.IDENTIFIER.Should().Be("bool");
+            signature.Parameters.Parameter.TypeDef.Identifier.IDENTIFIER.Should().Be("f");
+
+            signature.Parameters.AdditionalParameters[1].TypeDef.Type.IDENTIFIER.Should().Be("pig");
+            signature.Parameters.AdditionalParameters[1].TypeDef.Identifier.IDENTIFIER.Should().Be("honk");
+
+
+        }
+
     }
 }

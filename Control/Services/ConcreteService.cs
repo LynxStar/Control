@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,19 +25,54 @@ namespace Control.Services
 
                 object value = null;
 
-                if(property.PropertyType == typeof(string))
+                var cgrAttribute = property
+                    .GetCustomAttributes(typeof(CGRAttribute), true)
+                    .OfType<CGRAttribute>()
+                    .SingleOrDefault()
+                    ;
+
+                if(cgrAttribute is not null)
                 {
-                    value = GetTokenValue(node, property.Name);
+
+                    var cgrNode = node
+                        .SyntaxNodes
+                        .Where(x => x.Rule.Name.Contains("CGR"))
+                        .ToList()
+                        [cgrAttribute.Position]
+                        ;
+
+                    //Collection
+                    if (property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(List<>))
+                    {
+
+                        var method = typeof(ConcreteService).GetMethod("GetCGRValue");
+
+                        var listInnerType = property.PropertyType.GenericTypeArguments.First();
+
+                        var genericMethod = method.MakeGenericMethod(listInnerType);
+                        value = genericMethod.Invoke(this, new object[] { cgrNode, cgrAttribute });
+
+                    }
+                    //Single
+                    else
+                    {
+
+                        if (cgrAttribute.MapInner)
+                        {
+                            cgrNode = ApplyCGRProjection(cgrNode, cgrAttribute);
+                        }
+
+                        var method = typeof(ConcreteService).GetMethod("MapTo");
+                        var genericMethod = method.MakeGenericMethod(property.PropertyType);
+                        value = genericMethod.Invoke(this, new object[] { cgrNode });
+
+                    }
+
                 }
 
-                else if(property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(List<>))
+                else if (property.PropertyType == typeof(string))
                 {
-                    var method = typeof(ConcreteService).GetMethod("GetCGRValue");
-
-                    var listInnerType = property.PropertyType.GenericTypeArguments.First();
-
-                    var genericMethod = method.MakeGenericMethod(listInnerType);
-                    value = genericMethod.Invoke(this, new object[] { node });
+                    value = GetTokenValue(node, property.Name);
                 }
 
                 else
@@ -51,6 +87,33 @@ namespace Control.Services
             }
 
             return result;
+
+        }
+
+        public SyntaxNode ApplyCGRProjection(SyntaxNode cgrNode, CGRAttribute cgrAttribute)
+        {
+
+            if(!cgrAttribute.MapInner)
+            {
+                return cgrNode;
+            }
+
+            return cgrNode
+                .SyntaxNodes
+                [cgrAttribute.InnerPosition]
+                ;
+
+        }
+
+        public List<T> GetCGRValue<T>(SyntaxNode cgrNode, CGRAttribute cgrAttribute) where T : new()
+        {
+
+            return cgrNode
+                .SyntaxNodes
+                .Select(x => ApplyCGRProjection(x, cgrAttribute))
+                .Select(x => MapTo<T>(x))
+                .ToList()
+                ;
 
         }
 
@@ -76,38 +139,6 @@ namespace Control.Services
                 ;
 
             return MapTo<T>(childNode);
-
-        }
-
-        public List<T> GetCGRValue<T>(SyntaxNode node) where T : new()
-        {
-
-            var cgrs = node
-                .SyntaxNodes
-                .Where(x => x.Rule.Name.Contains("CGR"))
-                .ToList()
-                ;
-
-            var singleCGRs = cgrs
-                .Where(x => x.Rule.Options.All(x => x.Clauses.Count() == 1))
-                .ToList()
-                ;
-
-            var matchingCGR = singleCGRs
-                .Where(x => x.Rule.Options.First().Clauses.First().Value.ToLower() == typeof(T).Name.ToLower())
-                .ToList()
-                ;
-
-            var flatten = matchingCGR
-                .SelectMany(x => x.SyntaxNodes)
-                .SelectMany(x => x.SyntaxNodes)
-                .ToList()
-                ;
-
-            return flatten
-                .Select(x => MapTo<T>(x))
-                .ToList()
-                ;
 
         }
 

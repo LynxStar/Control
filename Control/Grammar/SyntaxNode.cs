@@ -7,6 +7,28 @@ using System.Threading.Tasks;
 namespace Control.Grammar
 {
 
+    public class SingleCGR : CGRNode
+    {
+
+        //CGR's child are the clauses of the only instance
+
+    }
+
+    public class MultiCGR : CGRNode
+    {
+        
+        //CGR's child are each instance
+        //Clauses are within the child's syntaxnodes
+
+    }
+
+    public class CGRNode : SyntaxNode
+    {
+
+        public bool IsOptional { get; set; }
+
+    }
+
     public class SyntaxNode
     {
 

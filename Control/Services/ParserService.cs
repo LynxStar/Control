@@ -188,15 +188,18 @@ namespace Control.Services
                 Options = new List<RuleOption> { clause.CaptureGroup }
             };
 
-            var node = new SyntaxNode
-            {
-                Rule = cgr,
-            };
+            SyntaxNode node = new SyntaxNode();
 
             if (allowMultiple)
             {
 
                 var innerMatch = 1;
+
+                node = new MultiCGR
+                {
+                    Rule = cgr,
+                    IsOptional = !required
+                };
 
                 foreach (var match in matches)
                 {
@@ -219,6 +222,12 @@ namespace Control.Services
             }
             else
             {
+                node = new SingleCGR
+                {
+                    Rule = cgr,
+                    IsOptional = !required
+                };
+
                 node.SyntaxNodes = matches.FirstOrDefault() ?? Enumerable.Empty<SyntaxNode>().ToList();
             }
 
