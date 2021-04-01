@@ -36,7 +36,7 @@ namespace Control.Services
                     var listInnerType = property.PropertyType.GenericTypeArguments.First();
 
                     var genericMethod = method.MakeGenericMethod(listInnerType);
-                    value = genericMethod.Invoke(this, new object[] { node, property.Name });
+                    value = genericMethod.Invoke(this, new object[] { node });
                 }
 
                 else
@@ -79,15 +79,32 @@ namespace Control.Services
 
         }
 
-        public List<T> GetCGRValue<T>(SyntaxNode node, string fieldName) where T : new()
+        public List<T> GetCGRValue<T>(SyntaxNode node) where T : new()
         {
 
-            return node
+            var cgrs = node
                 .SyntaxNodes
                 .Where(x => x.Rule.Name.Contains("CGR"))
-                .Where(x => x.SyntaxNodes.Count() == 1)
-                .Where(x => !x.SyntaxNodes.Any(x => x.Rule.Name.ToLower() != fieldName.ToLower()))
+                .ToList()
+                ;
+
+            var singleCGRs = cgrs
+                .Where(x => x.Rule.Options.All(x => x.Clauses.Count() == 1))
+                .ToList()
+                ;
+
+            var matchingCGR = singleCGRs
+                .Where(x => x.Rule.Options.First().Clauses.First().Value.ToLower() == typeof(T).Name.ToLower())
+                .ToList()
+                ;
+
+            var flatten = matchingCGR
                 .SelectMany(x => x.SyntaxNodes)
+                .SelectMany(x => x.SyntaxNodes)
+                .ToList()
+                ;
+
+            return flatten
                 .Select(x => MapTo<T>(x))
                 .ToList()
                 ;

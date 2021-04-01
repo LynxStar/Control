@@ -41,7 +41,7 @@ namespace Shift.Tests
         }
 
         [TestMethod]
-        public void EmptyLibraryTest()
+        public void EmptyDataTest()
         {
 
             var source = "data datastruct {}";
@@ -50,6 +50,36 @@ namespace Shift.Tests
 
             data.Identifier.IDENTIFIER.Should().Be("datastruct");
             data.Fields.Count().Should().Be(0);
+
+        }
+
+        [TestMethod]
+        public void FullDataTest()
+        {
+
+            var source = @"
+data datastruct
+{
+    
+    string bob;
+    string sid;
+
+    int mark;//this shouldn't be an iussue
+
+    bool sydney;
+//or this
+//int foo
+}
+";
+
+            var data = ConcreteMapper<Data>(source, "data");
+
+            data.Identifier.IDENTIFIER.Should().Be("datastruct");
+            data.Fields.Count().Should().Be(4);
+
+            data.Fields[2].TypeDef.Type.IDENTIFIER.Should().Be("int");
+
+            data.Fields[3].TypeDef.Identifier.IDENTIFIER.Should().Be("sydney");
 
         }
 
