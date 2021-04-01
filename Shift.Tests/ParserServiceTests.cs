@@ -17,13 +17,12 @@ namespace Shift.Tests
 
         GrammarService grammarService = new GrammarService();
         ParserService parserService = new ParserService();
-        LinkedList<Token> tokenStream;
 
         public SyntaxNode ASTTester(string source, string entryFormKey)
         {
 
             var rules = grammarService.ConvertToBakedRules(ShiftGrammar.FullGrammar);
-            tokenStream = grammarService.ConvertToTokenStream(source, rules);
+            var tokenStream = grammarService.ConvertToTokenStream(source, rules);
 
             var entryRule = rules[entryFormKey];
 
