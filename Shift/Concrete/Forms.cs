@@ -1,4 +1,5 @@
 ﻿using Control;
+using Control.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,6 @@ namespace Shift.Concrete
 {
     public class Source
     {
-        [InnerCGR]
         public List<Aspect> Aspects { get; set; }
     }
 
@@ -21,7 +21,6 @@ namespace Shift.Concrete
     public class Data
     {
         public Identifier Identifier { get; set; }
-        [InnerCGR]
         public List<Field> Fields { get; set; }
     }
 
@@ -46,10 +45,22 @@ namespace Shift.Concrete
         public string IDENTIFIER { get; set; }
     }
 
+    public class Library
+    {
+        public Identifier Identifier { get; set; }
+        public List<Method> Methods { get; set; }
+    }
+
+    public class Method
+    {
+        public Signature Signature { get; set; }
+        public Block Block { get; set; }
+    }
+
     public class Signature
     {
         public TypeDef TypeDef { get; set; }
-        [InnerCGR]
+        [Direct]
         public Parameters Parameters { get; set; }
 
     }
@@ -57,7 +68,7 @@ namespace Shift.Concrete
     public class Parameters
     {
         public Parameter Parameter { get; set; }
-        [InnerCGR(1)]
+        [Direct(1)]
         public List<Parameter> AdditionalParameters { get; set; }
     }
 
@@ -66,6 +77,39 @@ namespace Shift.Concrete
         public TypeDef TypeDef { get; set; }
     }
 
+    public class Block
+    {
 
+        [Direct(1)]
+        public List<Statement> Statements { get; set; }
+
+    }
+
+    
+
+    public interface Statement : Options<Declaration, Assignment, ReturnExpression, Expression>
+    {
+
+    }
+
+    public class Declaration : Statement
+    {
+
+    }
+
+    public class Assignment : Statement
+    {
+
+    }
+
+    public class ReturnExpression : Statement
+    {
+
+    }
+
+    public class Expression : Statement
+    {
+
+    }
 
 }

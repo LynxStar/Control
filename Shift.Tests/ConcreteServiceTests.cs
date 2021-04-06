@@ -36,7 +36,7 @@ namespace Shift.Tests
         {
 
             var node = ASTTester(source, entryFormKey);
-            return concreteService.MapTo<T>(node);
+            return concreteService.MapNodeToObject<T>(node);
 
         }
 
@@ -99,6 +99,41 @@ data datastruct
 
             signature.Parameters.AdditionalParameters[1].TypeDef.Type.IDENTIFIER.Should().Be("pig");
             signature.Parameters.AdditionalParameters[1].TypeDef.Identifier.IDENTIFIER.Should().Be("honk");
+
+
+        }
+
+        [TestMethod]
+        public void RuleOptionsTest()
+        {
+
+            var source = @"
+library blue
+{
+    int foo()
+    {
+        return 7;
+    }
+
+    string bar(string a)
+    {
+        return ""adsfadf"";
+    }
+
+    string baz(string a)
+    {
+        return ""another string"";
+    }
+
+    int buck(string a, int b)
+    {
+        return 3;
+    }
+
+}
+";
+
+            var library = ConcreteMapper<Library>(source, "library");
 
 
         }

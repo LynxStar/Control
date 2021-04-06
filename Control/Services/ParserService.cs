@@ -90,6 +90,7 @@ namespace Control.Services
                 if(optionNodes is not null)
                 {
                     node.SyntaxNodes = optionNodes;
+                    node.SelectedOption = option;
                     break;
                 }
 
@@ -188,18 +189,16 @@ namespace Control.Services
                 Options = new List<RuleOption> { clause.CaptureGroup }
             };
 
-            SyntaxNode node = new SyntaxNode();
+            var node = new SyntaxNode
+            {
+                Rule = cgr,
+                SelectedOption = clause.CaptureGroup
+            };
 
             if (allowMultiple)
             {
 
                 var innerMatch = 1;
-
-                node = new MultiCGR
-                {
-                    Rule = cgr,
-                    IsOptional = !required
-                };
 
                 foreach (var match in matches)
                 {
@@ -213,7 +212,8 @@ namespace Control.Services
                     var innerNode = new SyntaxNode
                     { 
                         Rule = innerCgr,
-                        SyntaxNodes = match
+                        SyntaxNodes = match,
+                        SelectedOption = clause.CaptureGroup
                     };
 
                     node.SyntaxNodes.Add(innerNode);
@@ -222,12 +222,6 @@ namespace Control.Services
             }
             else
             {
-                node = new SingleCGR
-                {
-                    Rule = cgr,
-                    IsOptional = !required
-                };
-
                 node.SyntaxNodes = matches.FirstOrDefault() ?? Enumerable.Empty<SyntaxNode>().ToList();
             }
 

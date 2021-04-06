@@ -8,78 +8,76 @@ using System.Threading.Tasks;
 
 namespace Control.Services
 {
-    
+
+    public interface Options { }
+
+    public interface Options<T1, T2, T3, T4> : Options { }
+
+    public class TargetContext
+    {
+        public SyntaxNode TargetNode { get; set; }
+        public Type DestinationType { get; set; }
+        public CGRAttribute CGRAttribute { get; set; }
+
+        public TargetContext WithNode(SyntaxNode targetNode)
+        {
+
+            return new TargetContext
+            {
+                TargetNode = targetNode,
+                DestinationType = DestinationType,
+                CGRAttribute = CGRAttribute
+            };
+
+        }
+
+        public TargetContext WithType(Type type)
+        {
+            return new TargetContext
+            {
+                TargetNode = TargetNode,
+                DestinationType = type,
+                CGRAttribute = CGRAttribute
+            };
+        }
+
+    }
+
     public class ConcreteService
     {
 
-
-        public T MapTo<T>(SyntaxNode node) where T : new()
+        public T MapNodeToObject<T>(SyntaxNode node) where T : new()
         {
 
             var properties = typeof(T).GetProperties();
 
             T result = new T();
 
-            foreach(var property in properties)
+            foreach (var property in properties)
             {
+
+                var context = BuildPropertyContext(node, property);
+
+                //Option goes here
 
                 object value = null;
 
-                var cgrAttribute = property
-                    .GetCustomAttributes(typeof(CGRAttribute), true)
-                    .OfType<CGRAttribute>()
-                    .SingleOrDefault()
-                    ;
-
-                if(cgrAttribute is not null)
+                if(context.TargetNode.SelectedOption is CaptureGroup)
                 {
 
-                    var cgrNode = node
-                        .SyntaxNodes
-                        .Where(x => x.Rule.Name.Contains("CGR"))
-                        .ToList()
-                        [cgrAttribute.Position]
+                    var innerType = context.DestinationType.IsList()
+                        ? context.DestinationType.GenericTypeArguments.First()
+                        : context.DestinationType
                         ;
 
-                    //Collection
-                    if (property.PropertyType.IsGenericType && property.PropertyType.GetGenericTypeDefinition() == typeof(List<>))
-                    {
-
-                        var method = typeof(ConcreteService).GetMethod("GetCGRValue");
-
-                        var listInnerType = property.PropertyType.GenericTypeArguments.First();
-
-                        var genericMethod = method.MakeGenericMethod(listInnerType);
-                        value = genericMethod.Invoke(this, new object[] { cgrNode, cgrAttribute });
-
-                    }
-                    //Single
-                    else
-                    {
-
-                        if (cgrAttribute.MapInner)
-                        {
-                            cgrNode = ApplyCGRProjection(cgrNode, cgrAttribute);
-                        }
-
-                        var method = typeof(ConcreteService).GetMethod("MapTo");
-                        var genericMethod = method.MakeGenericMethod(property.PropertyType);
-                        value = genericMethod.Invoke(this, new object[] { cgrNode });
-
-                    }
+                    var method = typeof(ConcreteService).GetMethod("MapCGR");
+                    var genericMethod = method.MakeGenericMethod(context.DestinationType, innerType);
+                    value = genericMethod.Invoke(this, new object[] { context });
 
                 }
-
-                else if (property.PropertyType == typeof(string))
-                {
-                    value = GetTokenValue(node, property.Name);
-                }
-
                 else
                 {
-                    var method = typeof(ConcreteService).GetMethod("GetFieldValue");
-                    var genericMethod = method.MakeGenericMethod(property.PropertyType);
-                    value = genericMethod.Invoke(this, new object[] { node, property.Name });
+                    value = MapDirectly(context);
                 }
 
                 property.SetValue(result, value);
@@ -87,58 +85,107 @@ namespace Control.Services
             }
 
             return result;
+        }
+
+        public TargetContext BuildPropertyContext(SyntaxNode node, PropertyInfo property)
+        {
+
+            var cgrAttribute = property
+                    .GetCustomAttributes(typeof(CGRAttribute), true)
+                    .OfType<CGRAttribute>()
+                    .SingleOrDefault()
+                    ;
+
+            var targetNode = GetTargetNode(node, property, cgrAttribute);
+
+            return new TargetContext
+            {
+                TargetNode = targetNode,
+                DestinationType = property.PropertyType,
+                CGRAttribute = cgrAttribute
+            };
 
         }
 
-        public SyntaxNode ApplyCGRProjection(SyntaxNode cgrNode, CGRAttribute cgrAttribute)
+        public SyntaxNode GetTargetNode(SyntaxNode node, PropertyInfo property, CGRAttribute cgrAttribute)
         {
 
-            if(!cgrAttribute.MapInner)
-            {
-                return cgrNode;
+            //Explicit Attribute Metadata
+            if(cgrAttribute is not null || property.PropertyType.IsList())
+            {   
+
+                return node
+                    .SyntaxNodes
+                    .Where(x => x.SelectedOption is CaptureGroup)
+                    .ToList()
+                    [cgrAttribute?.Position ?? 0]
+                    ;
+
             }
 
-            return cgrNode
-                .SyntaxNodes
-                [cgrAttribute.InnerPosition]
+            //Implicit rule name + string maps to token
+
+            var filterRuleType = property.PropertyType == typeof(string)
+                ? RuleType.Token
+                : RuleType.Form
                 ;
-
-        }
-
-        public List<T> GetCGRValue<T>(SyntaxNode cgrNode, CGRAttribute cgrAttribute) where T : new()
-        {
-
-            return cgrNode
-                .SyntaxNodes
-                .Select(x => ApplyCGRProjection(x, cgrAttribute))
-                .Select(x => MapTo<T>(x))
-                .ToList()
-                ;
-
-        }
-
-        public string GetTokenValue(SyntaxNode node, string tokenName)
-        {
 
             return node
                 .SyntaxNodes
-                .Where(x => x.Rule.RuleType == RuleType.Token)
-                .Single(x => x.Rule.Name.ToLower() == tokenName.ToLower())
-                .Capture
+                .Where(x => x.Rule.RuleType == filterRuleType)
+                .Single(x => x.Rule.Name.ToLower() == property.Name.ToLower())
                 ;
+        }
+
+        public object MapCGR<T,IT>(TargetContext context) where T : class where IT : class
+        {
+
+            if(typeof(T).IsList())
+            {
+
+                return context
+                    .TargetNode
+                    .SyntaxNodes
+                    .Select(x => MapCGRInsides<IT>(context.WithNode(x).WithType(typeof(IT))))
+                    .ToList()
+                    ;
+
+            }
+
+            return MapCGRInsides<T>(context);
 
         }
 
-        public T GetFieldValue<T>(SyntaxNode node, string fieldName) where T : new()
+        public T MapCGRInsides<T>(TargetContext context) where T : class
         {
 
-            var childNode = node
-                .SyntaxNodes
-                .Where(x => x.Rule.RuleType == RuleType.Form)
-                .Single(x => x.Rule.Name.ToLower() == fieldName.ToLower())
+            //Explicit or implicit
+            var mapDirect = context.CGRAttribute?.MapDirect ?? context.TargetNode.SyntaxNodes.Count() == 1;
+            var directPosition = context.CGRAttribute?.InnerPosition ?? 0;
+
+            var mapNode = mapDirect
+                ? context.TargetNode.SyntaxNodes[directPosition]
+                : context.TargetNode
                 ;
 
-            return MapTo<T>(childNode);
+            return MapDirectly(context.WithNode(mapNode)) as T;
+
+        }
+
+        public object MapDirectly(TargetContext context)
+        {
+
+            if (context.DestinationType == typeof(string))
+            {
+                return context.TargetNode.Capture;
+            }
+
+            else
+            {
+                var method = typeof(ConcreteService).GetMethod("MapNodeToObject");
+                var genericMethod = method.MakeGenericMethod(context.DestinationType);
+                return genericMethod.Invoke(this, new object[] { context.TargetNode });
+            }
 
         }
 

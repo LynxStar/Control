@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 namespace Control
 {
     
-    public class InnerCGR : CGRAttribute
+    public class Direct : CGRAttribute
     {
 
-        public InnerCGR()
+        public Direct()
         {
-            MapInner = true;
+            MapDirect = true;
         }
 
-        public InnerCGR(int innerPosition) : this()
+        public Direct(int innerPosition) : this()
         {
             InnerPosition = innerPosition;
         }
@@ -26,7 +26,7 @@ namespace Control
     {
 
         public int Position { get; init; } = 0;
-        public bool MapInner { get; init; } = false;
+        public bool MapDirect { get; init; } = false;
         public int InnerPosition { get; init; } = 0;
 
 
