@@ -9,15 +9,12 @@ using System.Threading.Tasks;
 namespace Control.Services
 {
 
-    public interface Options { }
-
-    public interface Options<T1, T2, T3, T4> : Options { }
-
     public class TargetContext
     {
         public SyntaxNode TargetNode { get; set; }
         public Type DestinationType { get; set; }
         public CGRAttribute CGRAttribute { get; set; }
+        public bool IsList { get; set; }
 
         public TargetContext WithNode(SyntaxNode targetNode)
         {
@@ -26,7 +23,8 @@ namespace Control.Services
             {
                 TargetNode = targetNode,
                 DestinationType = DestinationType,
-                CGRAttribute = CGRAttribute
+                CGRAttribute = CGRAttribute,
+                IsList = IsList
             };
 
         }
@@ -37,7 +35,8 @@ namespace Control.Services
             {
                 TargetNode = TargetNode,
                 DestinationType = type,
-                CGRAttribute = CGRAttribute
+                CGRAttribute = CGRAttribute,
+                IsList = IsList
             };
         }
 
@@ -58,20 +57,13 @@ namespace Control.Services
 
                 var context = BuildPropertyContext(node, property);
 
-                //Option goes here
-
                 object value = null;
 
                 if(context.TargetNode.SelectedOption is CaptureGroup)
-                {
-
-                    var innerType = context.DestinationType.IsList()
-                        ? context.DestinationType.GenericTypeArguments.First()
-                        : context.DestinationType
-                        ;
+                {   
 
                     var method = typeof(ConcreteService).GetMethod("MapCGR");
-                    var genericMethod = method.MakeGenericMethod(context.DestinationType, innerType);
+                    var genericMethod = method.MakeGenericMethod(context.DestinationType);
                     value = genericMethod.Invoke(this, new object[] { context });
 
                 }
@@ -90,63 +82,76 @@ namespace Control.Services
         public TargetContext BuildPropertyContext(SyntaxNode node, PropertyInfo property)
         {
 
-            var cgrAttribute = property
+            var context = new TargetContext
+            {
+                TargetNode = node,
+                DestinationType = property.PropertyType,
+                IsList = property.PropertyType.IsList(),
+            };
+
+            context.CGRAttribute = property
                     .GetCustomAttributes(typeof(CGRAttribute), true)
                     .OfType<CGRAttribute>()
                     .SingleOrDefault()
                     ;
 
-            var targetNode = GetTargetNode(node, property, cgrAttribute);
+            context.TargetNode = GetTargetNode(context, property);
 
-            return new TargetContext
+            if(context.IsList)
             {
-                TargetNode = targetNode,
-                DestinationType = property.PropertyType,
-                CGRAttribute = cgrAttribute
-            };
+                context.DestinationType = property
+                    .PropertyType
+                    .GenericTypeArguments
+                    .Single()
+                    ;
+            }
+
+            return context;
 
         }
 
-        public SyntaxNode GetTargetNode(SyntaxNode node, PropertyInfo property, CGRAttribute cgrAttribute)
+        public SyntaxNode GetTargetNode(TargetContext context, PropertyInfo property)
         {
 
             //Explicit Attribute Metadata
-            if(cgrAttribute is not null || property.PropertyType.IsList())
+            if(context.CGRAttribute is not null || context.IsList)
             {   
 
-                return node
+                return context
+                    .TargetNode
                     .SyntaxNodes
                     .Where(x => x.SelectedOption is CaptureGroup)
                     .ToList()
-                    [cgrAttribute?.Position ?? 0]
+                    [context.CGRAttribute?.Position ?? 0]
                     ;
 
             }
 
             //Implicit rule name + string maps to token
 
-            var filterRuleType = property.PropertyType == typeof(string)
+            var filterRuleType = context.DestinationType == typeof(string)
                 ? RuleType.Token
                 : RuleType.Form
                 ;
 
-            return node
+            return context
+                .TargetNode
                 .SyntaxNodes
                 .Where(x => x.Rule.RuleType == filterRuleType)
                 .Single(x => x.Rule.Name.ToLower() == property.Name.ToLower())
                 ;
         }
 
-        public object MapCGR<T,IT>(TargetContext context) where T : class where IT : class
+        public object MapCGR<T>(TargetContext context) where T : class
         {
 
-            if(typeof(T).IsList())
+            if(context.IsList)
             {
 
                 return context
                     .TargetNode
                     .SyntaxNodes
-                    .Select(x => MapCGRInsides<IT>(context.WithNode(x).WithType(typeof(IT))))
+                    .Select(x => MapCGRInsides<T>(context.WithNode(x)))
                     .ToList()
                     ;
 
@@ -159,6 +164,24 @@ namespace Control.Services
         public T MapCGRInsides<T>(TargetContext context) where T : class
         {
 
+            var cg = context.TargetNode.SelectedOption as CaptureGroup;
+
+            var allowNone = cg.Modifier is CaptureModifier.Optional or CaptureModifier.NoneToOne;
+
+            if (allowNone && !context.TargetNode.SyntaxNodes.Any())
+            {
+                return null;
+            }
+
+            var mapNode = GetMapNode(context);
+
+            return MapDirectly(context.WithNode(mapNode)) as T;
+
+        }
+
+        private static SyntaxNode GetMapNode(TargetContext context)
+        {
+
             //Explicit or implicit
             var mapDirect = context.CGRAttribute?.MapDirect ?? context.TargetNode.SyntaxNodes.Count() == 1;
             var directPosition = context.CGRAttribute?.InnerPosition ?? 0;
@@ -168,7 +191,44 @@ namespace Control.Services
                 : context.TargetNode
                 ;
 
-            return MapDirectly(context.WithNode(mapNode)) as T;
+            return mapNode;
+
+        }
+
+
+
+        public TargetContext ApplyOptionLogic(TargetContext context)
+        {
+
+            var optionsAttribute = context.DestinationType.GetCustomAttribute<OptionsAttribute>(true);
+
+            //There are no options
+            if (optionsAttribute is null)
+            {
+                return context;
+            }
+
+            //Options possible but no entries, so never materialized into an option
+            if (context.TargetNode is null)
+            {
+                return context;
+            }
+
+            var option = context.TargetNode.SelectedOption.ToString();
+
+            var usedOption = optionsAttribute
+                .Options
+                .Single(x => x.Key.ToLower() == option)
+                .Value
+                ;
+
+            //This currently assumes that an option consists of a single clause
+            var optionNode = context.TargetNode.SyntaxNodes.Single();
+
+            return context
+                .WithNode(optionNode)
+                .WithType(usedOption)
+                ;
 
         }
 
@@ -182,6 +242,9 @@ namespace Control.Services
 
             else
             {
+
+                context = ApplyOptionLogic(context);
+
                 var method = typeof(ConcreteService).GetMethod("MapNodeToObject");
                 var genericMethod = method.MakeGenericMethod(context.DestinationType);
                 return genericMethod.Invoke(this, new object[] { context.TargetNode });

@@ -85,7 +85,7 @@ form block : OPENSBRACKET (statement SEMICOLON)* CLOSESBRACKET;
 
 		public static string statement => @"
 form statement 
-	: declaration		
+	: declaration
 	| assignment
 	| return_expression
 	| expression

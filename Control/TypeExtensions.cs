@@ -14,5 +14,22 @@ namespace Control
             return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);
         }
 
+        public static string GetFormName(this Type type)
+        {
+
+            var formAttr = type
+                .GetCustomAttributes(typeof(FormAttribute), true)
+                .FirstOrDefault()
+                as FormAttribute
+                ;
+
+            return formAttr is null
+                ? type.Name
+                : formAttr.Name
+                ;
+
+        }
+
+
     }
 }

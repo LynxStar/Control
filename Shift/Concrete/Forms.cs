@@ -80,17 +80,13 @@ namespace Shift.Concrete
     public class Block
     {
 
-        [Direct(1)]
+        [Direct]
         public List<Statement> Statements { get; set; }
 
     }
 
-    
-
-    public interface Statement : Options<Declaration, Assignment, ReturnExpression, Expression>
-    {
-
-    }
+    [Options(typeof(Declaration), typeof(Assignment), typeof(ReturnExpression), typeof(Expression))]
+    public class Statement { }
 
     public class Declaration : Statement
     {
@@ -102,6 +98,7 @@ namespace Shift.Concrete
 
     }
 
+    [Form("return_expression")]
     public class ReturnExpression : Statement
     {
 

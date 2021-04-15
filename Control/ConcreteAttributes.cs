@@ -32,4 +32,31 @@ namespace Control
 
     }
 
+    public class OptionsAttribute : Attribute
+    {
+
+        public Dictionary<string,Type> Options { get; init; }
+
+        public OptionsAttribute(params Type[] variants)
+        {
+            Options = variants
+                .ToDictionary(x => x.GetFormName())
+                ;
+        }
+
+    }
+
+    public class FormAttribute : Attribute
+    { 
+    
+        public string Name { get; set; }
+
+        public FormAttribute(string name)
+        {
+            Name = name;
+        }
+    
+    }
+
+
 }

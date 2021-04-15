@@ -84,6 +84,37 @@ data datastruct
         }
 
         [TestMethod]
+        public void EmptySignatureTest()
+        {
+
+            var source = "int bob()";
+
+            var signature = ConcreteMapper<Signature>(source, "signature");
+
+            signature.TypeDef.Type.IDENTIFIER.Should().Be("int");
+            signature.TypeDef.Identifier.IDENTIFIER.Should().Be("bob");
+
+            signature.Parameters.Should().BeNull();
+
+        }
+
+        [TestMethod]
+        public void SignatureSignalParameterTest()
+        {
+
+            var source = "int bob(string a)";
+
+            var signature = ConcreteMapper<Signature>(source, "signature");
+
+            signature.TypeDef.Type.IDENTIFIER.Should().Be("int");
+            signature.TypeDef.Identifier.IDENTIFIER.Should().Be("bob");
+
+            signature.Parameters.Parameter.TypeDef.Type.IDENTIFIER.Should().Be("string");
+            signature.Parameters.Parameter.TypeDef.Identifier.IDENTIFIER.Should().Be("a");
+
+        }
+
+        [TestMethod]
         public void SignatureTest()
         {
 
@@ -100,6 +131,20 @@ data datastruct
             signature.Parameters.AdditionalParameters[1].TypeDef.Type.IDENTIFIER.Should().Be("pig");
             signature.Parameters.AdditionalParameters[1].TypeDef.Identifier.IDENTIFIER.Should().Be("honk");
 
+
+        }
+
+        [TestMethod]
+        public void BlockTest()
+        {
+
+            var source = @"
+{
+    return 7;
+}
+";
+
+            var block = ConcreteMapper<Block>(source, "block");
 
         }
 
