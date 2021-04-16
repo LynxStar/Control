@@ -138,7 +138,7 @@ namespace Control.Services
                 .TargetNode
                 .SyntaxNodes
                 .Where(x => x.Rule.RuleType == filterRuleType)
-                .Single(x => x.Rule.Name.ToLower() == property.Name.ToLower())
+                .Single(x => x.Rule.Name.ToLower() == property.GetFormName().ToLower())
                 ;
         }
 
@@ -200,10 +200,13 @@ namespace Control.Services
         public TargetContext ApplyOptionLogic(TargetContext context)
         {
 
-            var optionsAttribute = context.DestinationType.GetCustomAttribute<OptionsAttribute>(true);
+            var optionsBase = context
+                .DestinationType
+                .BaseType
+                ;
 
             //There are no options
-            if (optionsAttribute is null)
+            if (optionsBase?.IsAssignableTo(typeof(IOption)) == false)
             {
                 return context;
             }
@@ -216,11 +219,40 @@ namespace Control.Services
 
             var option = context.TargetNode.SelectedOption.ToString();
 
-            var usedOption = optionsAttribute
-                .Options
+            var isSingleToken = context
+                .TargetNode
+                .SelectedOption
+                .Clauses
+                .SingleOrDefault()
+                ?.Reference
+                ?.RuleType == RuleType.Token
+                ;
+
+            var hasMatchingType = optionsBase
+                .GenericTypeArguments
+                .ToDictionary(x => x.GetFormName())
+                .Count(x => x.Key.ToLower() == option) == 1
+                ;
+
+            Type usedOption = null;
+
+            if(hasMatchingType)
+            {
+                usedOption = optionsBase
+                .GenericTypeArguments
+                .ToDictionary(x => x.GetFormName())
                 .Single(x => x.Key.ToLower() == option)
                 .Value
                 ;
+            }
+            else if(isSingleToken)
+            {
+                usedOption = typeof(TokenValue);
+            }
+            else
+            {
+                throw new Exception("Unmatched Option");
+            }
 
             //This currently assumes that an option consists of a single clause
             var optionNode = context.TargetNode.SyntaxNodes.Single();
@@ -243,11 +275,40 @@ namespace Control.Services
             else
             {
 
+                var originalType = context.DestinationType;
+
                 context = ApplyOptionLogic(context);
 
-                var method = typeof(ConcreteService).GetMethod("MapNodeToObject");
-                var genericMethod = method.MakeGenericMethod(context.DestinationType);
-                return genericMethod.Invoke(this, new object[] { context.TargetNode });
+                object value = null;
+
+                if(context.DestinationType.BaseType?.IsAssignableTo(typeof(IOption)) == true)
+                {
+                    value = MapDirectly(context);
+                }
+                else if(context.DestinationType == typeof(TokenValue))
+                {
+                    value = new TokenValue
+                    {
+                        Token = context.TargetNode.Rule.Name,
+                        Value = context.TargetNode.Capture
+                    };
+                }
+                else
+                {
+                    var method = typeof(ConcreteService).GetMethod("MapNodeToObject");
+                    var genericMethod = method.MakeGenericMethod(context.DestinationType);
+                    value = genericMethod.Invoke(this, new object[] { context.TargetNode });
+                }
+
+                if(originalType != context.DestinationType)
+                {
+                    var optionsWrapper = Activator.CreateInstance(originalType) as IOption;
+                    optionsWrapper.Value = value;
+                    value = optionsWrapper;
+                }
+
+                return value;
+
             }
 
         }

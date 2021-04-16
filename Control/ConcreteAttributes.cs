@@ -32,18 +32,28 @@ namespace Control
 
     }
 
-    public class OptionsAttribute : Attribute
+    public interface IOption
     {
+        public object Value { get; set; }
+    }
 
-        public Dictionary<string,Type> Options { get; init; }
+    public class Option<T1, T2> : IOption
+    {
+        public object Value { get; set; }
+    }
+    public class Option<T1, T2, T3> : IOption
+    {
+        public object Value { get; set; }
+    }
+    public class Option<T1, T2, T3, T4> : IOption
+    {
+        public object Value { get; set; }
+    }
 
-        public OptionsAttribute(params Type[] variants)
-        {
-            Options = variants
-                .ToDictionary(x => x.GetFormName())
-                ;
-        }
-
+    public class TokenValue
+    {
+        public string Token { get; set; }
+        public string Value { get; set; }
     }
 
     public class FormAttribute : Attribute

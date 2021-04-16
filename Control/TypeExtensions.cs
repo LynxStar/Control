@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,6 +26,22 @@ namespace Control
 
             return formAttr is null
                 ? type.Name
+                : formAttr.Name
+                ;
+
+        }
+
+        public static string GetFormName(this PropertyInfo property)
+        {
+
+            var formAttr = property
+                .GetCustomAttributes(typeof(FormAttribute), true)
+                .FirstOrDefault()
+                as FormAttribute
+                ;
+
+            return formAttr is null
+                ? property.Name
                 : formAttr.Name
                 ;
 
