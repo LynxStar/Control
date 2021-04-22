@@ -15,7 +15,12 @@ namespace Shift.Concrete
 
     public class Aspect : Option<Data, Library> { }
 
-    public class Data
+    public interface Identifiable
+    {
+        public Identifier Identifier { get; set; }
+    }
+
+    public class Data : Identifiable
     {
         public Identifier Identifier { get; set; }
         public List<Field> Fields { get; set; }
@@ -24,6 +29,9 @@ namespace Shift.Concrete
     public class Identifier
     {
         public string IDENTIFIER { get; set; }
+
+        public static implicit operator string(Identifier identifier) => identifier.IDENTIFIER;
+
     }
 
     public class Field
@@ -42,7 +50,7 @@ namespace Shift.Concrete
         public string IDENTIFIER { get; set; }
     }
 
-    public class Library
+    public class Library : Identifiable
     {
         public Identifier Identifier { get; set; }
         public List<Method> Methods { get; set; }
@@ -86,8 +94,7 @@ namespace Shift.Concrete
 
     public class Declaration
     {
-        public Type Type { get; set; }
-        public Identifier Identifier { get; set; }
+        public TypeDef TypeDef { get; set; }
         [Direct]
         public Initializer Initializer { get; set; }
     }

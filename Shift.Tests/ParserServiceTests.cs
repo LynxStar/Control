@@ -296,8 +296,8 @@ library blue
                 .Declaration
                 ;
 
-            declaration.Type.TokenValue.Should().Be("var");
-            declaration.Identifier.TokenValue.Should().Be("beeds");
+            declaration.TypeDef.Type.TokenValue.Should().Be("var");
+            declaration.TypeDef.Identifier.TokenValue.Should().Be("beeds");
 
             var newExpression = declaration.CGR.First().Expression.UnaryToStart.NewExpression;
 
