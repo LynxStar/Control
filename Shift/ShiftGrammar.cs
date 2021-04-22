@@ -119,6 +119,7 @@ form expression_start
 	| identifier
 	| parens_expression
 	| new_expression
+	| invocation 
 	;
 
 form expression_chain

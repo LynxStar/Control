@@ -375,6 +375,110 @@ library blue
 
         }
 
+        [TestMethod]
+        public void StatementTest()
+        {
+
+            var source = @"
+{
+//declaration
+            int f;
+            //declaration with initializer
+            int g = 0;
+            datastruct baz = bob();
+            var beeds = new datastruct(7);
+
+
+            datastruct foo;//C# equivilent to var foo = new datastruct();
+
+            //assignment
+            g = 8;//Literal
+            g = f;//Identifier
+            g = bob();//expression
+}
+";
+
+            var node = ASTTester(source, "block");
+
+        }
+
+
+        [TestMethod]
+        public void ExpressionTest()
+        {
+
+            var source = @"bob()";
+
+            var node = ASTTester(source, "expression");
+
+        }
+
+        [TestMethod]
+        public void LibraryParseTest()
+        {
+
+            var source = @"
+
+library blue
+{
+    int foo()
+    {
+        return 7;
+    }
+
+    string bar(string a)
+    {
+        return ""adsfadf"";
+    }
+
+        string baz(string a)
+        {
+            return ""another string"";
+        }
+
+        int buck(string a, int b)
+        {
+            return 3;
+        }
+
+        int sid()
+        {
+
+            //declaration
+            int f;
+            //declaration with initializer
+            int g = 0;
+            datastruct baz = bob();
+            var beeds = new datastruct(7);
+
+
+            datastruct foo;//C# equivilent to var foo = new datastruct();
+
+            //assignment
+            g = 8;//Literal
+            g = f;//Identifier
+            g = bob();//expression
+
+            foo.bob = 8;//accessor chain for assignment
+
+            //expressions
+            ////unary expressions
+            /////primary expressions
+
+            (sid).bob();
+
+            //return_expression
+            return g;
+        }
+
+    }
+
+";
+
+            var node = ASTTester(source, "library");
+
+        }
+
     }
 
 }

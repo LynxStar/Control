@@ -40,7 +40,7 @@ library blue
         int f;
         //declaration with initializer
         int g = 0;
-        datastruct baz = new;
+        datastruct baz = bob();
         var beeds = new datastruct(7);
 
         
@@ -49,7 +49,7 @@ library blue
         //assignment
         g = 8;//Literal
         g = f;//Identifier
-        g = new();//expression
+        g = bob();//expression
         
         foo.bob = 8;//accessor chain for assignment
 

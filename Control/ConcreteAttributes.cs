@@ -40,12 +40,17 @@ namespace Control
     public class Option<T1, T2> : IOption
     {
         public object Value { get; set; }
+
     }
     public class Option<T1, T2, T3> : IOption
     {
         public object Value { get; set; }
     }
     public class Option<T1, T2, T3, T4> : IOption
+    {
+        public object Value { get; set; }
+    }
+    public class Option<T1, T2, T3, T4, T5> : IOption
     {
         public object Value { get; set; }
     }

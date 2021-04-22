@@ -251,6 +251,19 @@ namespace Control.Services
             }
             else
             {
+
+                var typeArgs = optionsBase
+                    .GenericTypeArguments
+                    ;
+
+                var formNames = typeArgs
+                    .ToDictionary(x => x.GetFormName())
+                    ;
+
+                var count = formNames
+                    .Count(x => x.Key.ToLower() == option)
+                    ;
+
                 throw new Exception("Unmatched Option");
             }
 
@@ -285,13 +298,15 @@ namespace Control.Services
                 {
                     value = MapDirectly(context);
                 }
-                else if(context.DestinationType == typeof(TokenValue))
+                else if(context.DestinationType.IsAssignableTo(typeof(TokenValue)))
                 {
-                    value = new TokenValue
-                    {
-                        Token = context.TargetNode.Rule.Name,
-                        Value = context.TargetNode.Capture
-                    };
+
+                    var tokenValue = Activator.CreateInstance(context.DestinationType) as TokenValue;
+
+                    tokenValue.Token = context.TargetNode.Rule.Name;
+                    tokenValue.Value = context.TargetNode.TokenValue;
+
+                    value = tokenValue;
                 }
                 else
                 {

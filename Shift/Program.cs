@@ -20,6 +20,8 @@ namespace Shift
             var grammar = ShiftGrammar.FullGrammar;
             var source = await File.ReadAllTextAsync("./structureTest.st");
 
+            var sourceTree = grammarService.ConvertTo<Concrete.Source>(grammar, source, EntryFormKey);
+
             var rootNode = grammarService.ConvertToAST(grammar, source, EntryFormKey);
 
             var mapper = new SyntaxMapper();

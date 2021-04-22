@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Control.Services
 {
-    
+
     public class GrammarService
     {
 
@@ -51,6 +51,19 @@ namespace Control.Services
             var ast = parserService.ParseTokenStream(tokenStream, entryRule);
 
             return ast;
+
+        }
+
+        public T ConvertTo<T>(string grammar, string source, string entryFormKey) where T : new()
+        {
+
+            var ast = ConvertToAST(grammar, source, entryFormKey);
+
+            ConcreteService concreteService = new ConcreteService();
+
+            var value = concreteService.MapNodeToObject<T>(ast);
+
+            return value;
 
         }
 

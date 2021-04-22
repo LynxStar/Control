@@ -139,7 +139,7 @@ namespace Shift.Concrete
     }
 
     [Form("expression_start")]
-    public class ExpressionStart : Option<Literal, Identifier, ParensExpression, NewExpression> { }
+    public class ExpressionStart : Option<Literal, Identifier, ParensExpression, NewExpression, Invocation> { }
 
     public class Literal : Option<Boolean, String, TokenValue> { }
 
@@ -149,12 +149,14 @@ namespace Shift.Concrete
         public string STRING { get; set; }
     }
 
+    [Form("parens_expression")]
     public class ParensExpression
     {
         [Direct]
         public Expression Expression { get; set; }
     }
 
+    [Form("new_expression")]
     public class NewExpression
     {
         public Identifier Identifier { get; set; }
@@ -183,6 +185,8 @@ namespace Shift.Concrete
     [Form("expression_chain")]
     public class ExpressionChain : Option<MemberAccess, Invocation> { }
 
+
+    [Form("member_access")]
     public class MemberAccess
     {
         public Identifier Identifier { get; set; }

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Shift.Tests
 {
-    
+
     [TestClass]
     public class ConcreteServiceTests
     {
@@ -37,6 +37,20 @@ namespace Shift.Tests
 
             var node = ASTTester(source, entryFormKey);
             return concreteService.MapNodeToObject<T>(node);
+
+        }
+
+        public T ConcreteMapDirectly<T>(string source, string entryFormKey) where T : class
+        {
+            var node = ASTTester(source, entryFormKey);
+
+            var context = new TargetContext
+            {
+                TargetNode = node,
+                DestinationType = typeof(T),
+            };
+
+            return concreteService.MapDirectly(context) as T;
 
         }
 
@@ -180,6 +194,139 @@ library blue
 
             var library = ConcreteMapper<Library>(source, "library");
 
+
+        }
+
+        [TestMethod]
+        public void BooleanTrueTest()
+        {
+
+            var source = @"true";
+
+            var boolean = ConcreteMapDirectly<Concrete.Boolean>(source, "boolean");
+
+            boolean.Token.Should().Be("boolean");
+            boolean.Value.Should().Be("true");
+
+        }
+
+        [TestMethod]
+        public void BooleanFalseTest()
+        {
+
+            var source = @"false";
+
+            var boolean = ConcreteMapDirectly<Concrete.Boolean>(source, "boolean");
+
+            boolean.Token.Should().Be("boolean");
+            boolean.Value.Should().Be("false");
+
+        }
+
+        [TestMethod]
+        public void LiteralBooleanTest()
+        {
+
+            var source = @"false";
+
+            var literal = ConcreteMapDirectly<Literal>(source, "literal");
+
+            (literal.Value as Concrete.Boolean).Token.Should().Be("boolean");
+            (literal.Value as Concrete.Boolean).Value.Should().Be("false");
+
+        }
+
+        [TestMethod]
+        public void LiteralIntegerTest()
+        {
+
+            var source = @"7";
+
+            var literal = ConcreteMapDirectly<Literal>(source, "literal");
+
+            (literal.Value as Control.TokenValue).Token.Should().Be("INTEGER");
+            (literal.Value as Control.TokenValue).Value.Should().Be("7");
+
+        }
+
+        [TestMethod]
+        public void LiteralStringTest()
+        {
+
+            var source = @"""adfasdf""";
+
+            var literal = ConcreteMapDirectly<Literal>(source, "literal");
+
+            (literal.Value as Concrete.String).STRING.Should().Be(@"""adfasdf""");
+
+        }
+
+        [TestMethod]
+        public void ExpressionStartIdentifierTest()
+        {
+            var source = "bigbobbully";
+
+            var expression_start = ConcreteMapDirectly<ExpressionStart>(source, "expression_start");
+
+            (expression_start.Value as Identifier).IDENTIFIER.Should().Be("bigbobbully");
+        }
+
+        [TestMethod]
+        public void LiteralExpressionTest()
+        {
+
+            var source = "7";
+
+            var expression = ConcreteMapDirectly<Expression>(source, "expression");
+
+            var literal = expression.UnaryExpression.MainExpression.ExpressionStart.Value as Literal;
+
+            (literal.Value as Control.TokenValue).Token.Should().Be("INTEGER");
+            (literal.Value as Control.TokenValue).Value.Should().Be("7");
+
+        }
+
+        [TestMethod]
+        public void ParensWithInnerLiteralExpressionTest()
+        {
+
+            var source = "(7)";
+
+            var parenExpression = ConcreteMapDirectly<ParensExpression>(source, "parens_expression");
+            var literal = parenExpression.Expression.UnaryExpression.MainExpression.ExpressionStart.Value as Literal;
+
+            (literal.Value as Control.TokenValue).Token.Should().Be("INTEGER");
+            (literal.Value as Control.TokenValue).Value.Should().Be("7");
+        }
+
+        [TestMethod]
+        public void NestedParensExpression()
+        {
+
+            var source = "((7))";
+
+            var parenExpression = ConcreteMapDirectly<ParensExpression>(source, "parens_expression");
+
+            var innerParens = parenExpression.Expression.UnaryExpression.MainExpression.ExpressionStart.Value as ParensExpression;
+
+
+            var literal = innerParens.Expression.UnaryExpression.MainExpression.ExpressionStart.Value as Literal;
+
+            (literal.Value as Control.TokenValue).Token.Should().Be("INTEGER");
+            (literal.Value as Control.TokenValue).Value.Should().Be("7");
+
+        }
+
+        [TestMethod]
+        public void ExpressionStartLiteralTest()
+        {
+
+            var source = "7";
+
+            var expression_start = ConcreteMapDirectly<ExpressionStart>(source, "expression_start");
+
+            ((expression_start.Value as Literal).Value as Control.TokenValue).Token.Should().Be("INTEGER");
+            ((expression_start.Value as Literal).Value as Control.TokenValue).Value.Should().Be("7");
 
         }
 
