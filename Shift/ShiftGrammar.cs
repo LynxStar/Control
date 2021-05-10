@@ -93,7 +93,7 @@ form statement
 ";
 
 		public static string declaration => @"
-form declaration : type identifier (initializer)?;
+form declaration : typeDef (initializer)?;
 
 form initializer : ASSIGNMENT expression;
 ";

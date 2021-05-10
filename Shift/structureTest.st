@@ -1,45 +1,45 @@
 ﻿data datastruct
 {
     
-    string bob;
-    string sid;
+    String bob;
+    String sid;
 
-    int mark;//this shouldn't be an iussue
+    Int32 mark;//this shouldn't be an iussue
 
-    bool sydney;
+    Boolean sydney;
 //or this
-//int foo
+//Int32 foo
 }
 
 library blue
 {
-    int foo()
+    Int32 foo()
     {
         return 7;
     }
 
-    string bar(string a)
+    String bar(String a)
     {
         return "adsfadf";
     }
 
-    string baz(string a)
+    String baz(String a)
     {
-        return "another string";
+        return "another String";
     }
 
-    int buck(string a, int b)
+    Int32 buck(String a, Int32 b)
     {
         return 3;
     }
 
-    int sid()
+    Int32 sid()
     {
 
         //declaration
-        int f;
+        Int32 f;
         //declaration with initializer
-        int g = 0;
+        Int32 g = 0;
         datastruct baz = bob();
         var beeds = new datastruct(7);
 

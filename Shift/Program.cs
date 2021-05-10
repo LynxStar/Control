@@ -1,4 +1,5 @@
 ﻿using Control.Services;
+using Shift.Services;
 using System;
 using System.IO;
 using System.Linq;
@@ -22,11 +23,13 @@ namespace Shift
 
             var sourceTree = grammarService.ConvertTo<Concrete.Source>(grammar, source, EntryFormKey);
 
-            var rootNode = grammarService.ConvertToAST(grammar, source, EntryFormKey);
+            var appService = new ApplicationService();
 
-            var mapper = new SyntaxMapper();
+            var app = appService.MapSourceToApplication(sourceTree);
 
-            var app = mapper.MapApplication(rootNode);
+            var typeService = new TypeService();
+
+            app = typeService.LinkExternalTypes(app);
 
         }
     
