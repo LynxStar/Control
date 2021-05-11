@@ -66,5 +66,24 @@ library blue
 }
 
 
-
+service Bob
+{
+	
+	int A()
+	{
+		return Foo;
+	}
+	
+	int Foo;
+	int Bar;
+	
+	Bob()
+	{
+		Foo = 8;
+		Bar = 3;
+	}
+	
+	
+	
+}
 

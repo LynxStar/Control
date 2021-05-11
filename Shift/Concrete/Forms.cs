@@ -13,7 +13,7 @@ namespace Shift.Concrete
         public List<Aspect> Aspects { get; set; }
     }
 
-    public class Aspect : Option<Data, Library> { }
+    public class Aspect : Option<Data, Library, Service> { }
 
     public interface Identifiable
     {
@@ -54,6 +54,23 @@ namespace Shift.Concrete
     {
         public Identifier Identifier { get; set; }
         public List<Method> Methods { get; set; }
+    }
+
+    public class Service : Identifiable
+    {
+        public Identifier Identifier { get; set; }
+        [Direct]
+        public List<ServiceMember> ServiceMembers { get; set; }
+    }
+
+    public class ServiceMember: Option<Method, Field, Constructor> { }
+
+    public class Constructor
+    {
+        public Identifier Identifier { get; set; }
+        [Direct]
+        public Parameters Parameters { get; set; }
+        public Block Block { get; set; }
     }
 
     public class Method

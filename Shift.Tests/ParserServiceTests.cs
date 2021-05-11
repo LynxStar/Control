@@ -223,8 +223,8 @@ library blue
                 .Declaration
                 ;
 
-            declaration.Type.TokenValue.Should().Be("int");
-            declaration.Identifier.TokenValue.Should().Be("f");
+            declaration.TypeDef.Type.TokenValue.Should().Be("int");
+            declaration.TypeDef.Identifier.TokenValue.Should().Be("f");
 
         }
 
@@ -240,8 +240,8 @@ library blue
                 .Declaration
                 ;
 
-            declaration.Type.TokenValue.Should().Be("int");
-            declaration.Identifier.TokenValue.Should().Be("g");
+            declaration.TypeDef.Type.TokenValue.Should().Be("int");
+            declaration.TypeDef.Identifier.TokenValue.Should().Be("g");
 
             declaration.CGR.First().BasicLiteral["INTEGER"].Capture.Should().Be("0");
 
@@ -476,6 +476,129 @@ library blue
 ";
 
             var node = ASTTester(source, "library");
+
+        }
+
+        [TestMethod]
+        public void EmptyServiceTest()
+        {
+
+            var source = @"
+service red
+{
+
+}
+";
+
+            var node = ASTTester(source, "service");
+
+        }
+
+        [TestMethod]
+        public void ServiceWithOnlyFieldsTest()
+        {
+
+            var source = @"
+service red
+{
+    int Foo;
+	int Bar;
+}
+";
+
+            var node = ASTTester(source, "service");
+
+        }
+
+        [TestMethod]
+        public void ServiceWithOnlyConstructorsTest()
+        {
+
+            var source = @"
+service red
+{
+	Bob()
+	{
+		Foo = 8;
+		Bar = 3;
+	}
+}
+";
+
+            var node = ASTTester(source, "service");
+
+        }
+
+        [TestMethod]
+        public void ServiceWithOnlyMethodsTest()
+        {
+
+            var source = @"
+service red
+{
+	int A()
+	{
+		return Foo;
+	}
+}
+";
+
+            var node = ASTTester(source, "service");
+
+        }
+
+        [TestMethod]
+        public void ServiceWitFieldsAndMethodsTest()
+        {
+
+            var source = @"
+service red
+{
+
+    int Foo;
+	int Bar;
+
+	int A()
+	{
+		return Foo;
+	}    
+    
+    int Sid;
+	int Baz;
+}
+";
+
+            var node = ASTTester(source, "service");
+
+        }
+
+        [TestMethod]
+        public void ServiceTest()
+        {
+
+            var source = @"
+service red
+{
+
+    int Foo;
+	int Bar;
+
+	int A()
+	{
+		return Foo;
+	}
+
+    int A()
+	{
+		return Foo;
+	}
+    
+    int Sid;
+	int Baz;
+}
+";
+
+            var node = ASTTester(source, "service");
 
         }
 

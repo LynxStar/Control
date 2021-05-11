@@ -95,6 +95,13 @@ namespace Shift.Domain
         public Dictionary<string, List<Method>> Methods = new Dictionary<string, List<Method>>();
     }
 
+    public class Service : Type
+    {
+        public Dictionary<string, Field> Fields = new Dictionary<string, Field>();
+        public Dictionary<string, List<Method>> Methods = new Dictionary<string, List<Method>>();
+        public Dictionary<string, List<Method>> Constructors = new Dictionary<string, List<Method>>();
+    }
+
     public class Method
     {
         public Signature Signature { get; set; }

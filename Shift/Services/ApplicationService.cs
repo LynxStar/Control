@@ -28,6 +28,7 @@ namespace Shift.Services
                 {
                     Concrete.Data data => MapData(data, application),
                     Concrete.Library library => MapLibrary(library, application),
+                    Concrete.Service service => MapService(service, application),
                     _ => throw new Exception("What type of aspect is this?")
                 };
 
@@ -81,6 +82,68 @@ namespace Shift.Services
 
             return library;
 
+
+        }
+
+        public Service MapService(Concrete.Service source, Application app)
+        {
+
+            var service = new Service
+            {
+                Name = source.Identifier
+            };
+
+            service.Methods = source
+                .ServiceMembers
+                .Select(x => x.Value)
+                .OfType<Concrete.Method>()
+                .Select(x => MapMethod(x, app))
+                .GroupBy(x => x.Signature.Identifier)
+                .ToDictionary(x => x.Key, x => x.ToList())
+                ;
+
+            service.Fields = source
+                .ServiceMembers
+                .Select(x => x.Value)
+                .OfType<Concrete.Field>()
+                .Select(x => MapField(x, app))
+                .ToDictionary(x => x.Identifier)
+                ;
+
+            service.Constructors = source
+                .ServiceMembers
+                .Select(x => x.Value)
+                .OfType<Concrete.Constructor>()
+                .Select(x => MapConstructor(x, service.Name, app))
+                .GroupBy(x => x.Signature.Identifier)
+                .ToDictionary(x => x.Key, x => x.ToList())
+                ;
+
+            return service;
+
+        }
+
+        public Method MapConstructor(Concrete.Constructor source, string serviceName, Application app)
+        {
+
+            var methodSource = new Concrete.Method
+            {
+                Signature = new Concrete.Signature
+                {
+                    TypeDef = new Concrete.TypeDef
+                    {
+                        Type = new Concrete.Type
+                        {
+                            IDENTIFIER = serviceName
+                        },
+                        Identifier = source.Identifier
+                    },
+                    Parameters = source.Parameters
+                },
+                Block = source.Block
+            };
+
+            return MapMethod(methodSource, app);
 
         }
 

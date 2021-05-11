@@ -18,6 +18,10 @@ namespace Shift
 
 {library}
 
+{service}
+
+{service_member}
+
 {method_forms}
 
 {statement}
@@ -62,6 +66,7 @@ namespace Shift
 form aspect
 	: data
 	| library
+	| service
 	;
 ";
 
@@ -71,8 +76,21 @@ form aspect
 
 		public static string library => "form library : LIBRARY identifier OPENSBRACKET (method)* CLOSESBRACKET;";
 
+		public static string service => "form service : SERVICE identifier OPENSBRACKET (service_member)* CLOSESBRACKET;";
+
+		public static string service_member => @"
+form service_member
+	: method
+	| field
+	| constructor
+	;
+
+";
+
 		public static string method_forms => @"
 form method : signature block;
+
+form constructor : identifier OPENPARENS (parameters)? CLOSEPARENS block;
 
 form signature : typeDef OPENPARENS (parameters)? CLOSEPARENS;
 
@@ -171,6 +189,7 @@ form string : STRING;
 		public static string KEYWORD_TOKENS => @"
 token DATA : 'data' WHITESPACE;
 token LIBRARY : 'library' WHITESPACE;
+token SERVICE : 'service' WHITESPACE;
 
 token RETURN : 'return';
 
