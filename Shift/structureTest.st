@@ -1,47 +1,47 @@
 ﻿data datastruct
 {
     
-    String bob;
-    String sid;
+    string bob;
+    string sid;
 
-    Int32 mark;//this shouldn't be an iussue
+    int mark;//this shouldn't be an iussue
 
-    Boolean sydney;
+    bool sydney;
 //or this
-//Int32 foo
+//int foo
 }
 
 library blue
 {
-    Int32 foo()
+    int foo()
     {
         return 7;
     }
 
-    String bar(String a)
+    string bar(string a)
     {
         return "adsfadf";
     }
 
-    String baz(String a)
+    string baz(string a)
     {
-        return "another String";
+        return "another string";
     }
 
-    Int32 buck(String a, Int32 b)
+    int buck(string a, int b)
     {
         return 3;
     }
 
-    Int32 sid()
+    int sid()
     {
 
         //declaration
-        Int32 f;
+        int f;
         //declaration with initializer
-        Int32 g = 0;
+        int g = 0;
         datastruct baz = bob();
-        var beeds = new datastruct(7);
+        datastruct beeds = new datastruct();
 
         
         datastruct foo;//C# equivilent to var foo = new datastruct();
@@ -87,3 +87,14 @@ service Bob
 	
 }
 
+library Program
+{
+
+    int Main()
+    {
+    
+        int foo = 3;
+
+    }
+
+}

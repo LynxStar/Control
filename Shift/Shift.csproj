@@ -15,6 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="CSharpProjectTemplate.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Example.st">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

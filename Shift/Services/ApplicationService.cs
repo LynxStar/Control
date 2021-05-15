@@ -17,6 +17,8 @@ namespace Shift.Services
 
             var application = new Application();
 
+            application.Name = "Test";
+
             foreach(var aspect in source.Aspects)
             {
 
@@ -217,7 +219,7 @@ namespace Shift.Services
 
             if(source.Initializer is not null)
             {
-                declaration.Expression = MapExpression(source.Initializer.Expression, app);
+                declaration.InitializerExpression = MapExpression(source.Initializer.Expression, app);
             }
 
             return declaration;

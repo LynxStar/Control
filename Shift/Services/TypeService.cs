@@ -43,6 +43,17 @@ namespace Shift.Services
     public class TypeService
     {
 
+        private readonly Dictionary<string, List<ExternalType>> SeedTypes = new Dictionary<string, List<ExternalType>>();
+
+        public TypeService()
+        {
+
+            SeedTypes.Add("int", new List<ExternalType> { new ExternalType { Name = "int", AssemblySource = "Bootstraped", Namespace = "Shift" } });
+            SeedTypes.Add("string", new List<ExternalType> { new ExternalType { Name = "string", AssemblySource = "Bootstraped", Namespace = "Shift" } });
+            SeedTypes.Add("bool", new List<ExternalType> { new ExternalType { Name = "bool", AssemblySource = "Bootstraped", Namespace = "Shift" } });
+
+        }
+
         public Application LinkExternalTypes(Application app)
         {
 
@@ -92,6 +103,8 @@ namespace Shift.Services
 
         private Dictionary<string, List<ExternalType>> LoadExternalTypes()
         {
+
+            return SeedTypes;
 
             var cachedAssemblies = LoadFromCache();
 

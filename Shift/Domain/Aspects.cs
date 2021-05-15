@@ -35,7 +35,7 @@ namespace Shift.Domain
 
                 if (type is null)
                 {
-                    type = new TypeMeta { };
+                    type = new TypeMeta { Name = name };
                     Types.Add(name, type);
                 }
 
@@ -68,6 +68,7 @@ namespace Shift.Domain
 
     public class TypeMeta
     {
+        public string Name { get; set; }
         public Type BackingType { get; set; }
         public TypeSource Source { get; set; }
     }
@@ -125,7 +126,7 @@ namespace Shift.Domain
     public class Declaration : Statement
     {
         public TypeDefinition TypeDefinition { get; set; }
-        public Expression Expression { get; set; }
+        public Expression InitializerExpression { get; set; }
     }
 
     public class Assignment : Statement

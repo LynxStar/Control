@@ -31,6 +31,10 @@ namespace Shift
 
             app = typeService.LinkExternalTypes(app);
 
+            var compilerService = new CompilerService();
+
+            compilerService.Compile(app);
+
         }
     
     }
