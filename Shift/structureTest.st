@@ -78,18 +78,18 @@ library blue
 service Bob
 {
 	
-	int A()
-	{
-		return Foo;
-	}
-	
 	int Foo;
 	int Bar;
 	
-	Bob()
+	this(int f)
 	{
-		Foo = 8;
+		Foo = f;
 		Bar = 3;
+	}
+	
+	int A()
+	{
+		return Foo;
 	}
 	
 	
@@ -103,6 +103,9 @@ library Program
     {
     
         int foo = 3;
+
+        var testService = new Bob();
+        var testServiceConstructor = new Bob(3);
 
     }
 

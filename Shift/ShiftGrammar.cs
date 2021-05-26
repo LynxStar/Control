@@ -90,7 +90,7 @@ form service_member
 		public static string method_forms => @"
 form method : signature block;
 
-form constructor : identifier OPENPARENS (parameters)? CLOSEPARENS block;
+form constructor : THIS OPENPARENS (parameters)? CLOSEPARENS block;
 
 form signature : typeDef OPENPARENS (parameters)? CLOSEPARENS;
 
@@ -190,6 +190,8 @@ form string : STRING;
 token DATA : 'data' WHITESPACE;
 token LIBRARY : 'library' WHITESPACE;
 token SERVICE : 'service' WHITESPACE;
+
+token THIS : 'this';
 
 token RETURN : 'return';
 

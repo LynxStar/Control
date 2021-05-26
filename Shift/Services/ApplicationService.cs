@@ -138,7 +138,7 @@ namespace Shift.Services
                         {
                             IDENTIFIER = serviceName
                         },
-                        Identifier = source.Identifier
+                        Identifier = new Concrete.Identifier { IDENTIFIER = "this" }
                     },
                     Parameters = source.Parameters
                 },

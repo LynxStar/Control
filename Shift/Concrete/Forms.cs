@@ -67,7 +67,6 @@ namespace Shift.Concrete
 
     public class Constructor
     {
-        public Identifier Identifier { get; set; }
         [Direct]
         public Parameters Parameters { get; set; }
         public Block Block { get; set; }
