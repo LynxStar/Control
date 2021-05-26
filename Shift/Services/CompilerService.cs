@@ -23,6 +23,10 @@ namespace Shift.Services
 
             File.Copy("./CSharpProjectTemplate.xml", $"{CompileDir}/{app.Name}.csproj");
 
+            Directory.CreateDirectory($"{CompileDir}/Data");
+            Directory.CreateDirectory($"{CompileDir}/Libraries");
+            Directory.CreateDirectory($"{CompileDir}/Services");
+
             Transpile(app);
 
             Compile();
@@ -96,15 +100,15 @@ namespace Shift.Services
         public string BuildAppSource(Application app)
         {
 
-            var aspects = app
+            app
                 .Types
                 .Where(x => x.Key != "var")
                 .Where(x => x.Key != "Program")
                 .Select(x => x.Value)
                 .Where(x => x.Source.From == "User Defined")
                 .Select(x => x.BackingType)
-                .Select(BuildType)
-                .AggregateSafe(string.Empty, (x, y) => $"{x}\r\n\t{y}")
+                .ToList()
+                .ForEach(TranspileType)
                 ;
 
             var entryPoint = (app
@@ -121,42 +125,49 @@ namespace Shift.Services
                 .Block
                 .Statements
                 .Select(BuildStatementSource)
-                .AggregateSafe(string.Empty, (x, y) => $"{x}\r\n\t\t\t{y}")
+                .AggregateSafe(string.Empty, (x, y) => $"{x}\r\n{y}")
                 ;
 
             var program = @$"
 using System;
 using System.Threading.Tasks;
+using {app.Name};
 
-namespace {app.Name}
-{{    
-    {aspects}
-    public class Program
-    {{
-
-        static async Task Main(string[] args)
-        {{
-
-            {statements}
-
-        }}
-    }}
-
-}}
+{statements}
 ";
 
             return program;
 
         }
 
-        public string BuildType(Domain.Type type)
+        public void TranspileType(Domain.Type type)
         {
-            return type switch 
+
+            var location = type switch
+            {
+                Data data => "Data",
+                Library library => "Libraries",
+                Service service => "Services"
+            };
+
+            var source = type switch 
             { 
                 Data data => BuildDataSource(data),
                 Library library => BuildLibrarySource(library),
                 Service service => BuildServiceSource(service)
             };
+
+            source = @$"
+using System;
+using System.Threading.Tasks;
+
+namespace {type.Namespace}
+{{    
+    {source}
+}}
+";
+
+            File.WriteAllText($"{CompileDir}/{location}/{type.Name}.cs", source);
 
         }
 

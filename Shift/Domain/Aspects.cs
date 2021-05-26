@@ -76,6 +76,7 @@ namespace Shift.Domain
     public class Type
     {
         public string Name { get; set; }
+        public string Namespace { get; set; }
     }
 
     public class Data : Type

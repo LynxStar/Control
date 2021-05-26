@@ -45,7 +45,8 @@ namespace Shift.Services
 
             var data = new Data
             {
-                Name = source.Identifier
+                Name = source.Identifier,
+                Namespace = app.Name
             };
 
             data.Fields = source
@@ -72,7 +73,8 @@ namespace Shift.Services
 
             var library = new Library
             {
-                Name = source.Identifier
+                Name = source.Identifier,
+                Namespace = app.Name
             };
 
             library.Methods = source
@@ -92,7 +94,8 @@ namespace Shift.Services
 
             var service = new Service
             {
-                Name = source.Identifier
+                Name = source.Identifier,
+                Namespace = app.Name
             };
 
             service.Methods = source
