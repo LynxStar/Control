@@ -105,7 +105,10 @@ library Program
         int foo = 3;
 
         var testService = new Bob();
-        var testServiceConstructor = new Bob(3);
+        var testServiceConstructor = new Bob(5);
+
+        Console.WriteLine(3);
+        Console.WriteLine(testService.Foo);
 
     }
 
