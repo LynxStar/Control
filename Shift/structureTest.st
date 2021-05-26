@@ -49,18 +49,27 @@ library blue
         //assignment
         g = 8;//Literal
         g = f;//Identifier
-        g = bob();//expression
+        baz = bob();//expression
         
-        foo.bob = 8;//accessor chain for assignment
+        foo.bob = "new string value";//accessor chain for assignment
 
         //expressions
         ////unary expressions
         /////primary expressions
 
-        (sid).bob();
+        var quack = new Bob();
+
+        (quack).A();
 
         //return_expression
         return g;
+    }
+
+    datastruct bob()
+    {
+
+        return new datastruct();
+
     }
 
 }

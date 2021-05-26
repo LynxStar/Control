@@ -14,6 +14,7 @@ namespace Shift.Services
     {
 
         private readonly string CompileDir = "./compile";
+        private readonly ExpressionBuilder expressionBuilder = new ExpressionBuilder();
 
         public void Compile(Application app)
         {
@@ -211,6 +212,32 @@ namespace {app.Name}
             ";
         }
 
+        public string BuildServiceSource(Service service)
+        {
+            var methods = service
+                .Methods
+                .SelectMany(x => x.Value)
+                .Select(x => BuildMethodSource(x, false))
+                .AggregateSafe(string.Empty, (x, y) => $"{x}\r\n\t\t{y}")
+                ;
+
+            var fields = service
+                .Fields
+                .Values
+                .Select(BuildFieldSource)
+                .AggregateSafe(string.Empty, (x, y) => $"{x}\r\n\t\t{y}")
+                ;
+
+            return @$"
+    public class {service.Name}
+    {{
+        {fields}
+        {methods}
+
+    }}
+            ";
+        }
+
         public string BuildMethodSource(Method method, bool libraryMethod)
         {
 
@@ -268,10 +295,12 @@ namespace {app.Name}
 
             var decSource = $"{typeName} {declaration.TypeDefinition.Identifier}";
 
-            decSource = declaration.InitializerExpression is null
-                ? decSource
-                : $"{decSource} = {BuildExpressionSource(declaration.InitializerExpression)}"
+            var initializer = declaration.InitializerExpression is not null
+                ? declaration.InitializerExpression
+                : expressionBuilder.NewDefault(typeName)
                 ;
+
+            decSource = $"{decSource} = {BuildExpressionSource(initializer)}";
 
             return decSource;
 
@@ -331,7 +360,7 @@ namespace {app.Name}
             {
                 Literal literal => BuildLiteralSource(literal),
                 Identifier identifier => BuildIdentifierSource(identifier),
-                ParensExpression expression => BuildExpressionSource(expression.Expression),
+                ParensExpression expression => $"({BuildExpressionSource(expression.Expression)})",
                 NewExpression newExpression => BuildNewExpressionSource(newExpression),
                 Invocation invocation => BuildInvocationSource(invocation)
             };
@@ -390,12 +419,6 @@ namespace {app.Name}
             };
 
         }
-
-        public string BuildServiceSource(Service service)
-        {
-            return "";
-        }
-
 
     }
 }
