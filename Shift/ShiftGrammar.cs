@@ -123,11 +123,19 @@ form initializer : ASSIGNMENT expression;
 form return_expression : RETURN expression;
 
 form expression 
-	: unary_expression
+	: binary_expression 
+	| unary_expression
 	;
 
 form unary_expression
 	: main_expression
+	;
+
+form binary_expression : unary_expression operator unary_expression;
+
+form operator
+	: EQUALS
+	| NOT_EQUALS
 	;
 
 form main_expression : expression_start (expression_chain)* ;
@@ -209,6 +217,9 @@ token CLOSEPARENS : ')';
 token DOT : '.';
 token SEMICOLON : ';';
 token COMMA : ',';
+
+token EQUALS : '==';
+token NOT_EQUALS : '!=';
 
 token ASSIGNMENT : '=';
 ";

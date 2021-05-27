@@ -255,11 +255,35 @@ namespace Shift.Services
         public Expression MapExpression(Concrete.Expression source, Application app)
         {
 
-            var expression = new Expression();
+            return source.Value switch
+            {
+                Concrete.BinaryExpression binary => MapBinaryExpression(binary, app),
+                Concrete.UnaryExpression unary => MapUnaryExpression(unary, app)
+            };
+        }
 
-            expression.UnaryExpression = MapUnaryExpression(source.UnaryExpression, app);
+        public BinaryExpression MapBinaryExpression(Concrete.BinaryExpression source, Application app)
+        {
 
-            return expression;
+            var binaryExpression = new BinaryExpression();
+
+            binaryExpression.Left = MapUnaryExpression(source.Left, app);
+            binaryExpression.Operator = MapOperator(source.Operator, app);
+            binaryExpression.Right = MapUnaryExpression(source.Right, app);
+
+            return binaryExpression;
+
+        }
+
+        public Operator MapOperator(Concrete.Operator source, Application app)
+        {
+
+            return source.Value switch
+            {
+                "==" => Operator.Equals,
+                "!=" => Operator.NotEquals
+            };
+
         }
 
         public UnaryExpression MapUnaryExpression(Concrete.UnaryExpression source, Application app)

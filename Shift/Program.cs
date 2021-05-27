@@ -19,6 +19,9 @@ namespace Shift
             var grammarService = new GrammarService();
 
             var grammar = ShiftGrammar.FullGrammar;
+
+            File.WriteAllText("./fullGrammar.txt", ShiftGrammar.FullGrammar);
+
             var source = await File.ReadAllTextAsync("./structureTest.st");
 
             var sourceTree = grammarService.ConvertTo<Concrete.Source>(grammar, source, EntryFormKey);

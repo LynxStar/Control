@@ -393,7 +393,34 @@ namespace {type.Namespace}
 
         public string BuildExpressionSource(Expression expression)
         {
-            return BuildUnaryExpressionSource(expression.UnaryExpression);
+
+            return expression switch
+            {
+                BinaryExpression binary => BuildBinaryExpressionSource(binary),
+                UnaryExpression unary => BuildUnaryExpressionSource(unary)
+            };
+        }
+
+        public string BuildBinaryExpressionSource(BinaryExpression binaryExpression)
+        {
+
+            var left = BuildUnaryExpressionSource(binaryExpression.Left);
+            var operatorSource = BuildOperatorSource(binaryExpression.Operator);
+            var right = BuildUnaryExpressionSource(binaryExpression.Right);
+
+            return $"{left} {operatorSource} {right}";
+
+        }
+
+        public string BuildOperatorSource(Operator op)
+        {
+
+            return op switch
+            {
+                Operator.Equals => "==",
+                Operator.NotEquals => "!="
+            };
+
         }
 
         public string BuildUnaryExpressionSource(UnaryExpression unaryExpression)

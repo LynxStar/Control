@@ -141,12 +141,24 @@ namespace Shift.Domain
         public Expression Expression { get; set; }
     }
 
-    public class Expression : Statement
+    public interface Expression : Statement
     {
-        public UnaryExpression UnaryExpression { get; set; }
     }
 
-    public class UnaryExpression
+    public class BinaryExpression : Expression
+    {
+        public UnaryExpression Left { get; set; }
+        public Operator Operator { get; set; }
+        public UnaryExpression Right { get; set; }
+    }
+
+    public enum Operator
+    {
+        Equals,
+        NotEquals
+    }
+
+    public class UnaryExpression : Expression
     {
         public MainExpression MainExpression { get; set; }
     }

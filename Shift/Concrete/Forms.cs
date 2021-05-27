@@ -140,11 +140,23 @@ namespace Shift.Concrete
         public Expression Expression { get; set; }
     }
 
-    public class Expression
+    public class Expression : Option<BinaryExpression, UnaryExpression> { }
+
+    [Form("binary_expression")]
+    public class BinaryExpression
     {
         [Form("unary_expression")]
-        public UnaryExpression UnaryExpression { get; set; }
+        [Instance(0)]
+        public UnaryExpression Left { get; set; }
+
+        public Operator Operator { get; set; }
+
+        [Form("unary_expression")]
+        [Instance(1)]
+        public UnaryExpression Right { get; set; }
     }
+
+    public class Operator : TokenValue { }
 
     [Form("unary_expression")]
     public class UnaryExpression

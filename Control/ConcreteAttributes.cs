@@ -70,7 +70,19 @@ namespace Control
         {
             Name = name;
         }
-    
+
+    }
+
+    public class Instance : Attribute
+    {
+
+        public int Position { get; init; } = 0;
+
+        public Instance(int position)
+        {
+            Position = position;
+        }
+
     }
 
 

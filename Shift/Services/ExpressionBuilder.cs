@@ -14,17 +14,14 @@ namespace Shift.Services
         public Expression NewDefault(string typeName)
         {
 
-            return new Expression
+            return new UnaryExpression
             {
-                UnaryExpression = new UnaryExpression
+                MainExpression = new MainExpression
                 {
-                    MainExpression = new MainExpression
+                    ExpressionStart = new NewExpression
                     {
-                        ExpressionStart = new NewExpression
-                        {
-                            Identifier = new Identifier { Path = typeName },
-                            Invocation = new Invocation { }
-                        }
+                        Identifier = new Identifier { Path = typeName },
+                        Invocation = new Invocation { }
                     }
                 }
             };

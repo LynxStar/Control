@@ -134,11 +134,24 @@ namespace Control.Services
                 : RuleType.Form
                 ;
 
+            var instanceAttr = property
+                    .GetCustomAttributes(typeof(Instance), true)
+                    .OfType<Instance>()
+                    .SingleOrDefault()
+                    ;
+
+            var instance = instanceAttr is null
+                ? 0
+                : instanceAttr.Position
+                ;
+
             return context
                 .TargetNode
                 .SyntaxNodes
                 .Where(x => x.Rule.RuleType == filterRuleType)
-                .Single(x => x.Rule.Name.ToLower() == property.GetFormName().ToLower())
+                .Where(x => x.Rule.Name.ToLower() == property.GetFormName().ToLower())
+                .Skip(instance)
+                .First()
                 ;
         }
 
