@@ -107,17 +107,19 @@ library Program
         var testService = new Bob();
         var testServiceConstructor = new Bob(5);
 
-        Console.WriteLine(3);
-        Console.WriteLine(testService.Foo);
+        Test.Check(foo, 3);
+        Test.Check(testService.Foo, 0);
 
         var binaryTest = 5 == 5;
         var binaryTest2 = 5 != 6;
 
+        Test.True(binaryTest);
+        Test.True(binaryTest2);
 
-        Console.WriteLine(5 == 5);
-        Console.WriteLine(5 != 6);
-        Console.WriteLine(5 == 500);
-        Console.WriteLine(7 != 7);
+        Test.True(5 == 5);
+        Test.True(5 != 6);
+        Test.Check(5 == 500, false);
+        Test.Check(7 != 7, false);
 
     }
 

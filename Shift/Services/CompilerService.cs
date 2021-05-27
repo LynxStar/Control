@@ -35,7 +35,7 @@ namespace Shift.Services
 
         public void Transpile(Application app)
         {
-
+            SeedTestHelper();
             var transpile = BuildAppSource(app);
             File.WriteAllText($"{CompileDir}/Program.cs", transpile);
 
@@ -95,6 +95,48 @@ namespace Shift.Services
             {
                 dir.Delete(true);
             }
+        }
+
+        public void SeedTestHelper()
+        {
+
+            var source =
+@"using System;
+using System.Threading.Tasks;
+
+namespace ShiftExample
+{        
+    public static class Test
+    {
+        public static void Check<T>(T actual, T expected)
+        {
+            var result = System.Collections.Generic.EqualityComparer<T>.Default.Equals(actual, expected);
+            
+            var color = result
+                ? ConsoleColor.Green
+                : ConsoleColor.Red
+                ;
+
+            string output = result
+                ? ""Pass""
+                : ""Fail""
+                ;
+
+            Console.ForegroundColor = color;
+            Console.WriteLine(output);
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+		
+        public static void True(bool actual)
+        {
+            Check(actual, true);
+        }
+    }            
+}
+";
+            File.WriteAllText($"{CompileDir}/Libraries/Test.cs", source);
+
+
         }
 
         public string BuildAppSource(Application app)
@@ -460,7 +502,7 @@ namespace {type.Namespace}
             object value = literal switch
             {
                 Literal<int> i => i.Value,
-                Literal<bool> b => b.Value,
+                Literal<bool> b => b.Value.ToString().ToLower(),
                 Literal<string> s => s.Value
             };
 

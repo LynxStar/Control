@@ -52,6 +52,9 @@ namespace Shift.Services
             SeedTypes.Add("string", new List<ExternalType> { new ExternalType { Name = "string", AssemblySource = "Bootstraped", Namespace = "Shift" } });
             SeedTypes.Add("bool", new List<ExternalType> { new ExternalType { Name = "bool", AssemblySource = "Bootstraped", Namespace = "Shift" } });
 
+            SeedTypes.Add("object", new List<ExternalType> { new ExternalType { Name = "object", AssemblySource = "Bootstraped", Namespace = "Shift" } });
+            SeedTypes.Add("void", new List<ExternalType> { new ExternalType { Name = "void", AssemblySource = "Bootstraped", Namespace = "Shift" } });
+
         }
 
         public Application LinkExternalTypes(Application app)

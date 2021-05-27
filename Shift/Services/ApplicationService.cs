@@ -17,7 +17,7 @@ namespace Shift.Services
 
             var application = new Application();
 
-            application.Name = "Test";
+            application.Name = "ShiftExample";
 
             foreach(var aspect in source.Aspects)
             {

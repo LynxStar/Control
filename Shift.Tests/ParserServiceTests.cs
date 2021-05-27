@@ -517,7 +517,7 @@ service red
             var source = @"
 service red
 {
-	Bob()
+	this()
 	{
 		Foo = 8;
 		Bar = 3;
