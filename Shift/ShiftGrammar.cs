@@ -26,6 +26,7 @@ namespace Shift
 
 {statement}
 
+{control_statement}
 {declaration}
 {assignment}
 {accessor}
@@ -98,29 +99,42 @@ form parameters : parameter (COMMA parameter)*;
 
 form parameter : typeDef;
 
-form block : OPENSBRACKET (statement SEMICOLON)* CLOSESBRACKET;
+form block : OPENSBRACKET (statement)* CLOSESBRACKET;
 ";
 
 		public static string statement => @"
 form statement 
-	: declaration
+	: control_statement
+	| declaration
 	| assignment
 	| return_expression
-	| expression
+	| expression_statement
 	;
 ";
 
+		public static string control_statement => @"
+form control_statement
+	: if_control
+	| while_control;
+
+form if_control : IF OPENPARENS binary_expression CLOSEPARENS block;
+form while_control : WHILE OPENPARENS binary_expression CLOSEPARENS block;
+
+";
+
 		public static string declaration => @"
-form declaration : typeDef (initializer)?;
+form declaration : typeDef (initializer)? SEMICOLON;
 
 form initializer : ASSIGNMENT expression;
 ";
 
-		public static string assignment => "form assignment : accessor ASSIGNMENT expression;";
+		public static string assignment => "form assignment : accessor ASSIGNMENT expression SEMICOLON;";
 		public static string accessor => "form accessor : identifier (DOT identifier)*;";
 
 		public static string expressionTypes => @"
-form return_expression : RETURN expression;
+form return_expression : RETURN expression SEMICOLON;
+
+form expression_statement : expression SEMICOLON;
 
 form expression 
 	: binary_expression 
@@ -131,11 +145,19 @@ form unary_expression
 	: main_expression
 	;
 
-form binary_expression : unary_expression operator unary_expression;
+form binary_expression : unary_expression binary_operator unary_expression;
 
-form operator
+form binary_operator
 	: EQUALS
 	| NOT_EQUALS
+	| LESS_THAN_OR_EQUAL
+	| GREATER_THAN_OR_EQUAL
+	| LEFT_CAROT
+	| RIGHT_CAROT
+	| PLUS
+	| MINUS
+	| STAR
+	| FORWARDSLASH
 	;
 
 form main_expression : expression_start (expression_chain)* ;
@@ -201,6 +223,9 @@ token SERVICE : 'service' WHITESPACE;
 
 token THIS : 'this';
 
+token IF : 'if';
+token WHILE : 'while';
+
 token RETURN : 'return';
 
 token NEW : 'new';
@@ -218,10 +243,23 @@ token DOT : '.';
 token SEMICOLON : ';';
 token COMMA : ',';
 
+
+token LESS_THAN_OR_EQUAL : '<=';
+token GREATER_THAN_OR_EQUAL : '>=';
+
+token LEFT_CAROT : '<';
+token RIGHT_CAROT : '>';
+
 token EQUALS : '==';
 token NOT_EQUALS : '!=';
 
 token ASSIGNMENT : '=';
+
+token PLUS : '+';
+token MINUS : '-';
+token STAR : '*';
+token FORWARDSLASH : '/';
+
 ";
 
 		public static string STRING => "token STRING : `\"((?:\\\\.|[^\\\\\"])*)\"`;";

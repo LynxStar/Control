@@ -205,13 +205,51 @@ namespace Shift.Services
 
             return statement.Value switch
             {
+                Concrete.ControlStatement control => MapControl(control, app),
                 Concrete.Declaration declaration => MapDeclaration(declaration, app),
                 Concrete.Assignment assignment => MapAssignment(assignment, app),
                 Concrete.ReturnExpression returnExpression => MapReturnExpression(returnExpression, app),
-                Concrete.Expression expression => MapExpression(expression, app),
+                Concrete.ExpressionStatement expression => MapExpression(expression.Expression, app),
                 _ => null,
             };
         }
+
+        public ControlStatement MapControl(Concrete.ControlStatement source, Application app)
+        {
+
+            return source.Value switch 
+            { 
+                Concrete.IfControl ifControl => MapIfControl(ifControl, app),
+                Concrete.WhileControl whileControl => MapWhileControl(whileControl, app)
+            };
+
+
+        }
+
+        public IfControl MapIfControl(Concrete.IfControl source, Application app)
+        {
+
+            var ifControl = new IfControl();
+
+            ifControl.Condition = MapBinaryExpression(source.Condition, app);
+            ifControl.Block = MapBlock(source.Block, app);
+
+            return ifControl;
+
+        }
+
+        public WhileControl MapWhileControl(Concrete.WhileControl source, Application app)
+        {
+
+            var whileControl = new WhileControl();
+
+            whileControl.Condition = MapBinaryExpression(source.Condition, app);
+            whileControl.Block = MapBlock(source.Block, app);
+
+            return whileControl;
+
+        }
+
 
         public Declaration MapDeclaration(Concrete.Declaration source, Application app)
         {
@@ -268,20 +306,28 @@ namespace Shift.Services
             var binaryExpression = new BinaryExpression();
 
             binaryExpression.Left = MapUnaryExpression(source.Left, app);
-            binaryExpression.Operator = MapOperator(source.Operator, app);
+            binaryExpression.Operator = MapBinaryOperator(source.Operator, app);
             binaryExpression.Right = MapUnaryExpression(source.Right, app);
 
             return binaryExpression;
 
         }
 
-        public Operator MapOperator(Concrete.Operator source, Application app)
+        public BinaryOperator MapBinaryOperator(Concrete.BinaryOperator source, Application app)
         {
 
             return source.Value switch
             {
-                "==" => Operator.Equals,
-                "!=" => Operator.NotEquals
+                "==" => BinaryOperator.Equals,
+                "!=" => BinaryOperator.NotEquals,
+                "<=" => BinaryOperator.LessThanOrEqual,
+                "<" => BinaryOperator.LessThan,
+                ">=" => BinaryOperator.GreaterThanOrEqual,
+                ">" => BinaryOperator.GreaterThan,
+                "+" => BinaryOperator.Addition,
+                "-" => BinaryOperator.Subtraction,
+                "*" => BinaryOperator.Multiplication,
+                "/" => BinaryOperator.Division
             };
 
         }

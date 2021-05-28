@@ -11,21 +11,13 @@ namespace Shift.Tests
 
         GrammarService grammarService = new GrammarService();
 
-        string literalsGrammar = $@"
-{ShiftGrammar.literals}
-{ShiftGrammar.STRING}
-{ShiftGrammar.KEYWORD_TOKENS}
-{ShiftGrammar.SYNTAX_TOKENS}
-{ShiftGrammar.LASTCAPTURE_LITERALS}
-{ShiftGrammar._fragments}
-{ShiftGrammar.WHITESPACE}
-";
+        string fullGrammar = ShiftGrammar.FullGrammar;
 
         [TestMethod]
         public void IntegerLiteralTest()
         {
 
-            var rules = grammarService.ConvertToBakedRules(literalsGrammar);
+            var rules = grammarService.ConvertToBakedRules(fullGrammar);
 
             var tokenStream = grammarService.ConvertToTokenStream("7", rules);
 
@@ -37,7 +29,7 @@ namespace Shift.Tests
         public void BooleanTrueLiteralTest()
         {
 
-            var rules = grammarService.ConvertToBakedRules(literalsGrammar);
+            var rules = grammarService.ConvertToBakedRules(fullGrammar);
 
             var tokenStream = grammarService.ConvertToTokenStream("true", rules);
 
@@ -49,7 +41,7 @@ namespace Shift.Tests
         public void BooleanFalseLiteralTest()
         {
 
-            var rules = grammarService.ConvertToBakedRules(literalsGrammar);
+            var rules = grammarService.ConvertToBakedRules(fullGrammar);
 
             var tokenStream = grammarService.ConvertToTokenStream("false", rules);
 
@@ -61,7 +53,7 @@ namespace Shift.Tests
         public void StringTest()
         {
 
-            var rules = grammarService.ConvertToBakedRules(literalsGrammar);
+            var rules = grammarService.ConvertToBakedRules(fullGrammar);
 
             var tokenStream = grammarService.ConvertToTokenStream("\"test\"", rules);
 
@@ -90,7 +82,7 @@ namespace Shift.Tests
             //        {RETURN} {UNLINKED:["]}{IDENTIFIER}{UNLINKED:["]}{SEMICOLON}
             //Discards have been reapplied to source formatting for the tab and spacing, unsure why it's lexing the identifier before the string
 
-            var rules = grammarService.ConvertToBakedRules(literalsGrammar);
+            var rules = grammarService.ConvertToBakedRules(fullGrammar);
 
             var tokenStream = grammarService.ConvertToTokenStream("        return \"adsfadf\";", rules);
 
@@ -98,6 +90,18 @@ namespace Shift.Tests
             tokenStream.First.Next.Value.Rule.Name.Should().Be("STRING");
             tokenStream.First.Next.Next.Value.Rule.Name.Should().Be("SEMICOLON");
 
+
+        }
+
+        [TestMethod]
+        public void NotEqualsTest()
+        {
+
+            var rules = grammarService.ConvertToBakedRules(fullGrammar);
+
+            var tokenStream = grammarService.ConvertToTokenStream("!=", rules);
+
+            tokenStream.First.Value.Rule.Name.Should().Be("NOT_EQUALS");
 
         }
 

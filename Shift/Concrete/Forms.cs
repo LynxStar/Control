@@ -106,7 +106,26 @@ namespace Shift.Concrete
 
     }
 
-    public class Statement : Option<Declaration, Assignment, ReturnExpression, Expression> { }
+    public class Statement : Option<ControlStatement, Declaration, Assignment, ReturnExpression, ExpressionStatement> { }
+
+    [Form("control_statement")]
+    public class ControlStatement : Option<IfControl, WhileControl> { }
+
+    [Form("if_control")]
+    public class IfControl
+    {
+        [Form("binary_expression")]
+        public BinaryExpression Condition { get; set; }
+        public Block Block { get; set; }
+    }
+
+    [Form("while_control")]
+    public class WhileControl
+    {
+        [Form("binary_expression")]
+        public BinaryExpression Condition { get; set; }
+        public Block Block { get; set; }
+    }
 
     public class Declaration
     {
@@ -140,6 +159,12 @@ namespace Shift.Concrete
         public Expression Expression { get; set; }
     }
 
+    [Form("expression_statement")]
+    public class ExpressionStatement
+    {
+        public Expression Expression { get; set; }
+    }
+
     public class Expression : Option<BinaryExpression, UnaryExpression> { }
 
     [Form("binary_expression")]
@@ -149,14 +174,16 @@ namespace Shift.Concrete
         [Instance(0)]
         public UnaryExpression Left { get; set; }
 
-        public Operator Operator { get; set; }
+        [Form("binary_operator")]
+        public BinaryOperator Operator { get; set; }
 
         [Form("unary_expression")]
         [Instance(1)]
         public UnaryExpression Right { get; set; }
     }
 
-    public class Operator : TokenValue { }
+    [Form("binary_operator")]
+    public class BinaryOperator : TokenValue { }
 
     [Form("unary_expression")]
     public class UnaryExpression

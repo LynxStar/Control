@@ -110,6 +110,7 @@ namespace Control.Grammar
         }
 
 
+        public SyntaxNode ExpressionStatement => this["expression_statement"];
         public SyntaxNode Expression => this["expression"];
         public SyntaxNode ReturnExpression => this["return_expression"];
         public SyntaxNode UnaryExpression => this["unary_expression"];

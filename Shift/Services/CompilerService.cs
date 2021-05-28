@@ -281,18 +281,17 @@ namespace {type.Namespace}
         public string BuildConstructorSource(Method method, string serviceName)
         {
             var parameters = BuildParameterSource(method);
-            string block = BuildBlockSource(method);
+            string block = BuildBlockSource(method.Block);
 
             return @$"
         public {serviceName}({parameters}){block}
 ";
         }
 
-        private string BuildBlockSource(Method method)
+        private string BuildBlockSource(Block block)
         {
 
-            var statements = method
-                .Block
+            var statements = block
                 .Statements
                 .Select(BuildStatementSource)
                 .AggregateSafe(string.Empty, (x, y) => $"{x}\r\n\t\t\t{y}")
@@ -311,7 +310,7 @@ namespace {type.Namespace}
         public string BuildMethodSource(Method method, bool libraryMethod)
         {
             string parameters = BuildParameterSource(method);
-            string block = BuildBlockSource(method);
+            string block = BuildBlockSource(method.Block);
 
             var libraryModifier = libraryMethod
                 ? " static"
@@ -337,6 +336,7 @@ namespace {type.Namespace}
 
             var source = statement switch
             {
+                ControlStatement control => BuildControlSource(control),
                 Declaration declaration => BuildDeclarationSource(declaration),
                 Assignment assignment => BuildAssignmentSource(assignment),
                 ReturnExpression returnExpression => BuildReturnExpressionSource(returnExpression),
@@ -344,6 +344,22 @@ namespace {type.Namespace}
             };
 
             return $"{source};";
+
+        }
+
+        public string BuildControlSource(ControlStatement control)
+        {
+
+            var name = control switch 
+            { 
+                IfControl => "if",
+                WhileControl => "while"
+            };
+
+            var condition = BuildBinaryExpressionSource(control.Condition);
+            var block = BuildBlockSource(control.Block);
+
+            return $"{name}({condition})\r\n\t\t\t{{{block}\t\t\t}}\r\n";
 
         }
 
@@ -413,13 +429,21 @@ namespace {type.Namespace}
 
         }
 
-        public string BuildOperatorSource(Operator op)
+        public string BuildOperatorSource(BinaryOperator op)
         {
 
             return op switch
             {
-                Operator.Equals => "==",
-                Operator.NotEquals => "!="
+                BinaryOperator.Equals => "==",
+                BinaryOperator.NotEquals => "!=",
+                BinaryOperator.GreaterThan => ">",
+                BinaryOperator.GreaterThanOrEqual => ">=",
+                BinaryOperator.LessThan => "<",
+                BinaryOperator.LessThanOrEqual => "<=",
+                BinaryOperator.Addition => "+",
+                BinaryOperator.Subtraction => "-",
+                BinaryOperator.Multiplication => "*",
+                BinaryOperator.Division => "/"
             };
 
         }

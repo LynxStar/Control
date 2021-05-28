@@ -96,37 +96,109 @@ service Bob
 	
 }
 
+library Prover
+{
+
+    void ComparisonOperators()
+    {
+    
+        Test.True(3 == 3, "Equal Correct Test");
+        Test.True(3 != 4, "NotEqual Correct Test");
+        Test.True(3 < 4, "LessThan Correct Test");
+        Test.True(3 <= 3, "LessThanEqual Correct Test");
+        Test.True(5 > 3, "GreaterThan Correct Test");
+        Test.True(3 >= 3, "GreaterThanEqual Correct Test");
+
+        Test.False(3 != 3, "Equal Incorrect Test");
+        Test.False(3 == 4, "NotEqual Incorrect Test");
+        Test.False(3 > 4, "LessThan Incorrect Test");
+        Test.False(4 <= 3, "LessThanEqual Incorrect Test");
+        Test.False(3 > 5, "GreaterThan Incorrect Test");
+        Test.False(2 >= 3, "GreaterThanEqual Incorrect Test");
+
+    }
+
+    void IfControl()
+    {
+
+        var foo = 0;
+
+        var ran = 0;
+
+        if(foo == 0)
+        {
+            ran = 1;
+        }
+
+        //Verify that if statements run
+        Test.Check(ran, 1, "If Control True");
+
+        ran = 0;
+
+        if(foo == 1)
+        {
+            ran = 1;
+        }
+
+        //Verify that they don't run when condition is false
+        Test.Check(ran, 0, "If Control False");
+
+    }
+
+    void WhileControl()
+    {
+
+        var i = 0;
+
+        while(i != 5)
+        {
+
+            //i = i + 1;
+
+        }
+
+    }
+
+    void Old()
+    {
+        int foo = 3;
+
+        var testService = new Bob();
+        var testServiceConstructor = new Bob(5);
+
+        Test.Check(foo, 3, "basic");
+        Test.Check(testService.Foo, 0, "basic");
+
+        var binaryTest = 5 == 5;
+        var binaryTest2 = 5 != 6;
+
+        Test.True(binaryTest, "basic");
+        Test.True(binaryTest2, "basic");
+
+        Test.True(5 == 5, "basic");
+        Test.True(5 != 6, "basic");
+        Test.Check(5 == 500, false, "basic");
+        Test.Check(7 != 7, false, "basic");
+
+
+        testServiceConstructor.Foo = 8;
+
+        var methodCheck = testServiceConstructor.A();
+
+        Test.True(testServiceConstructor.Foo == methodCheck, "basic");
+    }
+
+}
+
 library Program
 {
 
     int Main()
     {
     
-        int foo = 3;
-
-        var testService = new Bob();
-        var testServiceConstructor = new Bob(5);
-
-        Test.Check(foo, 3);
-        Test.Check(testService.Foo, 0);
-
-        var binaryTest = 5 == 5;
-        var binaryTest2 = 5 != 6;
-
-        Test.True(binaryTest);
-        Test.True(binaryTest2);
-
-        Test.True(5 == 5);
-        Test.True(5 != 6);
-        Test.Check(5 == 500, false);
-        Test.Check(7 != 7, false);
-
-        testServiceConstructor.Foo = 8;
-
-        var methodCheck = testServiceConstructor.A();
-
-        Test.True(testServiceConstructor.Foo == methodCheck);
-
+        
+        Prover.ComparisonOperators();
+        Prover.IfControl();
 
     }
 

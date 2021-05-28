@@ -124,6 +124,15 @@ namespace Shift.Domain
 
     public interface Statement { }
 
+    public class ControlStatement : Statement
+    {
+        public BinaryExpression Condition { get; set; }
+        public Block Block { get; set; }
+    }
+
+    public class IfControl : ControlStatement { }
+    public class WhileControl : ControlStatement { }
+
     public class Declaration : Statement
     {
         public TypeDefinition TypeDefinition { get; set; }
@@ -148,14 +157,22 @@ namespace Shift.Domain
     public class BinaryExpression : Expression
     {
         public UnaryExpression Left { get; set; }
-        public Operator Operator { get; set; }
+        public BinaryOperator Operator { get; set; }
         public UnaryExpression Right { get; set; }
     }
 
-    public enum Operator
+    public enum BinaryOperator
     {
         Equals,
-        NotEquals
+        NotEquals,
+        GreaterThan,
+        LessThan,
+        GreaterThanOrEqual,
+        LessThanOrEqual,
+        Subtraction,
+        Addition,
+        Multiplication,
+        Division
     }
 
     public class UnaryExpression : Expression

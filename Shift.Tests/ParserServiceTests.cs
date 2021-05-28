@@ -76,7 +76,7 @@ namespace Shift.Tests
         public void ReturnStatementTest()
         {
 
-            var source = "return 7";
+            var source = "return 7;";
 
             var node = ASTTester(source, "return_expression");
 
@@ -215,7 +215,7 @@ library blue
         public void DeclarationStatementTest()
         {
 
-            var source = "int f";
+            var source = "int f;";
 
             var node = ASTTester(source, "statement");
 
@@ -232,7 +232,7 @@ library blue
         public void DeclarationWithInitializerTest()
         {
 
-            var source = "int g = 0";
+            var source = "int g = 0;";
 
             var node = ASTTester(source, "statement");
 
@@ -288,7 +288,7 @@ library blue
         public void DeclarationWithInitializerInvocationCallTest()
         {
 
-            var source = "var beeds = new datastruct(7)";
+            var source = "var beeds = new datastruct(7);";
 
             var node = ASTTester(source, "statement");
 
@@ -326,7 +326,7 @@ library blue
         public void AssignmentWithInvocationTest()
         {
 
-            var source = "g.d.e = bob(7)";
+            var source = "g.d.e = bob(7);";
 
             var node = ASTTester(source, "statement");
 
@@ -358,11 +358,12 @@ library blue
         public void SidBobParenExpressionTest()
         {
 
-            var source = "(sid).bob()";
+            var source = "(sid).bob();";
 
             var node = ASTTester(source, "statement");
 
             var mainExpression = node
+                .ExpressionStatement
                 .Expression
                 .UnaryExpression
                 .MainExpression
@@ -599,6 +600,101 @@ service red
 ";
 
             var node = ASTTester(source, "service");
+
+        }
+
+        [TestMethod]
+        public void IfControlTest()
+        {
+            var source = @"if(0 == 0){}";
+            var node = ASTTester(source, "control_statement");
+        }
+
+        [TestMethod]
+        public void IfControlFromStatementTest()
+        {
+            var source = @"if(0 == 0){}";
+            var node = ASTTester(source, "statement");
+        }
+
+
+
+        [TestMethod]
+        public void IfControlInsideBlockTest()
+        {
+            var source = @"
+{
+	if(0 == 0){}
+}
+";
+
+            var node = ASTTester(source, "block");
+        }
+
+        [TestMethod]
+        public void ComparisonEqualsTest()
+        {
+            var source = @"
+void ComparisonOperators()
+{
+    
+    Test.True(3 == 3, ""Equal Correct Test"");
+
+}
+";
+
+            var node = ASTTester(source, "method");
+
+        }
+
+        [TestMethod]
+        public void BinaryExpressionNotEqualsTest()
+        {
+            var source = @"0 != 0";
+            var node = ASTTester(source, "binary_expression");
+        }
+
+        [TestMethod]
+        public void ComparisonNotEqualsTest()
+        {
+            var source = @"
+void ComparisonOperators()
+{
+    
+    Test.True(3 != 4, ""NotEqual Correct Test"");
+
+}
+";
+
+            var node = ASTTester(source, "method");
+
+        }
+
+        [TestMethod]
+        public void ComparisonOperatorsTest()
+        {
+            var source = @"
+void ComparisonOperators()
+{
+    
+    Test.True(3 == 3, ""Equal Correct Test"");
+    Test.True(3 != 4, ""NotEqual Correct Test"");
+    Test.True(3 < 4, ""LessThan Correct Test"");
+    Test.True(3 <= 3, ""LessThanEqual Correct Test"");
+    Test.True(5 > 3, ""GreaterThan Correct Test"");
+    Test.True(3 >= 3, ""GreaterThanEqual Correct Test"");
+
+    Test.False(3 != 3, ""Equal Incorrect Test"");
+    Test.False(3 == 4, ""NotEqual Incorrect Test"");
+    Test.False(3 > 4, ""LessThan Incorrect Test"");
+    Test.False(4 <= 3, ""LessThanEqual Incorrect Test"");
+    Test.False(3 > 5, ""GreaterThan Incorrect Test"");
+    Test.False(2 >= 3, ""GreaterThanEqual Incorrect Test"");
+
+}
+";
+
+            var node = ASTTester(source, "method");
 
         }
 
