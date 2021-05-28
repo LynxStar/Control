@@ -121,6 +121,13 @@ library Program
         Test.Check(5 == 500, false);
         Test.Check(7 != 7, false);
 
+        testServiceConstructor.Foo = 8;
+
+        var methodCheck = testServiceConstructor.A();
+
+        Test.True(testServiceConstructor.Foo == methodCheck);
+
+
     }
 
 }
