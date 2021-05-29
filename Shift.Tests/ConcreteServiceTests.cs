@@ -279,7 +279,17 @@ library blue
 
             var expression = ConcreteMapDirectly<Expression>(source, "expression");
 
-            var literal = (expression.Value as UnaryExpression).MainExpression.ExpressionStart.Value as Literal;
+            var literal = (expression.Value as ConditionalOrExpression)
+                .ConditionalAndExpression
+                .EqualityExpression
+                .RelationalExpression
+                .AdditiveExpression
+                .MultiplicativeExpression
+                .UnaryExpression
+                .MainExpression
+                .ExpressionStart
+                .Value as Literal
+                ;
 
             (literal.Value as Control.TokenValue).Token.Should().Be("INTEGER");
             (literal.Value as Control.TokenValue).Value.Should().Be("7");
@@ -293,7 +303,17 @@ library blue
             var source = "(7)";
 
             var parenExpression = ConcreteMapDirectly<ParensExpression>(source, "parens_expression");
-            var literal = (parenExpression.Expression.Value as UnaryExpression).MainExpression.ExpressionStart.Value as Literal;
+            var literal = (parenExpression.Expression.Value as ConditionalOrExpression)
+                .ConditionalAndExpression
+                .EqualityExpression
+                .RelationalExpression
+                .AdditiveExpression
+                .MultiplicativeExpression
+                .UnaryExpression
+                .MainExpression
+                .ExpressionStart
+                .Value as Literal
+                ;
 
             (literal.Value as Control.TokenValue).Token.Should().Be("INTEGER");
             (literal.Value as Control.TokenValue).Value.Should().Be("7");
@@ -307,10 +327,30 @@ library blue
 
             var parenExpression = ConcreteMapDirectly<ParensExpression>(source, "parens_expression");
 
-            var innerParens = (parenExpression.Expression.Value as UnaryExpression).MainExpression.ExpressionStart.Value as ParensExpression;
+            var innerParens = (parenExpression.Expression.Value as ConditionalOrExpression)
+                .ConditionalAndExpression
+                .EqualityExpression
+                .RelationalExpression
+                .AdditiveExpression
+                .MultiplicativeExpression
+                .UnaryExpression
+                .MainExpression
+                .ExpressionStart
+                .Value as ParensExpression
+                ;
 
 
-            var literal = (innerParens.Expression.Value as UnaryExpression).MainExpression.ExpressionStart.Value as Literal;
+            var literal = (innerParens.Expression.Value as ConditionalOrExpression)
+                .ConditionalAndExpression
+                .EqualityExpression
+                .RelationalExpression
+                .AdditiveExpression
+                .MultiplicativeExpression
+                .UnaryExpression
+                .MainExpression
+                .ExpressionStart
+                .Value as Literal
+                ;
 
             (literal.Value as Control.TokenValue).Token.Should().Be("INTEGER");
             (literal.Value as Control.TokenValue).Value.Should().Be("7");
@@ -327,6 +367,24 @@ library blue
 
             ((expression_start.Value as Literal).Value as Control.TokenValue).Token.Should().Be("INTEGER");
             ((expression_start.Value as Literal).Value as Control.TokenValue).Value.Should().Be("7");
+
+        }
+
+        [TestMethod]
+        public void RelationalTest()
+        {
+            var source = "3 < 4";
+
+            var relationalExpression = ConcreteMapDirectly<RelationalExpression>(source, "relational_expression");
+        }
+
+        [TestMethod]
+        public void StatementMultiplicativeInsanity()
+        {
+            
+            var source = "int f;";
+
+            var statement = ConcreteMapDirectly<Statement>(source, "statement");
 
         }
 

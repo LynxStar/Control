@@ -26,5 +26,15 @@ namespace Control.Grammar
             return $"{RuleType} {Name}: {output}";
         }
 
+        public string SnakeCase()
+        {
+
+            return RuleType == RuleType.Form
+                ? Name.ToSnakeCase()
+                : Name
+                ;
+
+        }
+
     }
 }

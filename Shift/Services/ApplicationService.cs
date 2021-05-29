@@ -231,7 +231,7 @@ namespace Shift.Services
 
             var ifControl = new IfControl();
 
-            ifControl.Condition = MapBinaryExpression(source.Condition, app);
+            ifControl.Condition = MapConditionalOrExpression(source.Condition, app);
             ifControl.Block = MapBlock(source.Block, app);
 
             return ifControl;
@@ -243,7 +243,7 @@ namespace Shift.Services
 
             var whileControl = new WhileControl();
 
-            whileControl.Condition = MapBinaryExpression(source.Condition, app);
+            whileControl.Condition = MapConditionalOrExpression(source.Condition, app);
             whileControl.Block = MapBlock(source.Block, app);
 
             return whileControl;
@@ -295,39 +295,135 @@ namespace Shift.Services
 
             return source.Value switch
             {
-                Concrete.BinaryExpression binary => MapBinaryExpression(binary, app),
-                Concrete.UnaryExpression unary => MapUnaryExpression(unary, app)
+                Concrete.ConditionalOrExpression condOrExpr => MapConditionalOrExpression(condOrExpr, app)
             };
         }
 
-        public BinaryExpression MapBinaryExpression(Concrete.BinaryExpression source, Application app)
+        public ConditionalOrExpression MapConditionalOrExpression(Concrete.ConditionalOrExpression condOrExpr, Application app)
         {
 
-            var binaryExpression = new BinaryExpression();
+            var expr = new ConditionalOrExpression();
 
-            binaryExpression.Left = MapUnaryExpression(source.Left, app);
-            binaryExpression.Operator = MapBinaryOperator(source.Operator, app);
-            binaryExpression.Right = MapUnaryExpression(source.Right, app);
+            expr.ConditionalAndExpression = MapConditionalAndExpression(condOrExpr.ConditionalAndExpression, app);
+            expr.ConditionalAndExpressions = condOrExpr
+                .ConditionalAndExpressions
+                .Select(x => MapConditionalAndExpression(x, app))
+                .ToList()
+                ;
 
-            return binaryExpression;
+            return expr;
 
         }
 
-        public BinaryOperator MapBinaryOperator(Concrete.BinaryOperator source, Application app)
+        public ConditionalAndExpression MapConditionalAndExpression(Concrete.ConditionalAndExpression condAndExpr, Application app)
+        {
+
+            var expr = new ConditionalAndExpression();
+
+            expr.EqualityExpression = MapEqualityExpressionExpression(condAndExpr.EqualityExpression, app);
+            expr.EqualityExpressions = condAndExpr
+                .EqualityExpressions
+                .Select(x => MapEqualityExpressionExpression(x, app))
+                .ToList()
+                ;
+
+            return expr;
+
+        }
+
+        public EqualityExpression MapEqualityExpressionExpression(Concrete.EqualityExpression equalityExpression, Application app)
+        {
+
+            var expr = new EqualityExpression();
+
+            expr.Left = MapRelationalExpression(equalityExpression.RelationalExpression, app);
+            
+            if(equalityExpression.EqualityExpressionChain is not null)
+            {
+                expr.EqualityOperator = equalityExpression.EqualityExpressionChain.EqualityOperator.Value switch
+                {
+                    "==" => EqualityOperator.Equals,
+                    "!=" => EqualityOperator.NotEquals
+                };
+                expr.Right = MapRelationalExpression(equalityExpression.EqualityExpressionChain.RelationalExpression, app);
+            }
+
+            return expr;
+
+        }
+
+        public RelationalExpression MapRelationalExpression(Concrete.RelationalExpression relationshipExpression, Application app)
+        {
+
+            var expr = new RelationalExpression();
+
+            expr.Left = MapAdditiveExpression(relationshipExpression.AdditiveExpression, app);
+
+            if (relationshipExpression.RelationalExpressionChain is not null)
+            {
+                expr.RelationalOperator = relationshipExpression.RelationalExpressionChain.RelationalOperator.Value switch
+                {
+                    "<=" => RelationalOperator.LessThanOrEqual,
+                    "<" => RelationalOperator.LessThan,
+                    ">=" => RelationalOperator.GreaterThanOrEqual,
+                    ">" => RelationalOperator.GreaterThan,
+                };
+                expr.Right = MapAdditiveExpression(relationshipExpression.RelationalExpressionChain.AdditiveExpression, app);
+            }
+
+            return expr;
+
+        }
+
+        public AdditiveExpression MapAdditiveExpression(Concrete.AdditiveExpression additiveExpr, Application app)
+        {
+
+            var expr = new AdditiveExpression();
+
+            expr.MultiplicativeExpression = MapMultiplicativeExpression(additiveExpr.MultiplicativeExpression, app);
+            expr.MultiplicativeExpressions = additiveExpr
+                .AdditiveExpressionChain
+                .Select(x => (MapAdditiveOperator(x.AdditiveOperator), MapMultiplicativeExpression(x.MultiplicativeExpression, app)))
+                .ToList()
+                ;
+
+            return expr;
+
+        }
+
+        public AdditiveOperator MapAdditiveOperator(Concrete.AdditiveOperator source)
         {
 
             return source.Value switch
             {
-                "==" => BinaryOperator.Equals,
-                "!=" => BinaryOperator.NotEquals,
-                "<=" => BinaryOperator.LessThanOrEqual,
-                "<" => BinaryOperator.LessThan,
-                ">=" => BinaryOperator.GreaterThanOrEqual,
-                ">" => BinaryOperator.GreaterThan,
-                "+" => BinaryOperator.Addition,
-                "-" => BinaryOperator.Subtraction,
-                "*" => BinaryOperator.Multiplication,
-                "/" => BinaryOperator.Division
+                "+" => AdditiveOperator.Addition,
+                "-" => AdditiveOperator.Subtraction
+            };
+
+        }
+
+        public MultiplicativeExpression MapMultiplicativeExpression(Concrete.MultiplicativeExpression multiplicativeExpression, Application app)
+        {
+
+            var expr = new MultiplicativeExpression();
+
+            expr.UnaryExpression = MapUnaryExpression(multiplicativeExpression.UnaryExpression, app);
+            expr.UnaryExpressions = multiplicativeExpression
+                .MultiplicativeExpressionChain
+                .Select(x => (MapMultiplicativeOperator(x.MultiplicativeOperator), MapUnaryExpression(x.UnaryExpression, app)))
+                .ToList()
+                ;
+
+            return expr;
+
+        }
+        public MultiplicativeOperator MapMultiplicativeOperator(Concrete.MultiplicativeOperator source)
+        {
+
+            return source.Value switch
+            {                
+                "*" => MultiplicativeOperator.Multiplication,
+                "/" => MultiplicativeOperator.Division
             };
 
         }

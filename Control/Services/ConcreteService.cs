@@ -59,12 +59,19 @@ namespace Control.Services
 
                 object value = null;
 
-                if(context.TargetNode.SelectedOption is CaptureGroup)
+                if(context.TargetNode.SelectedOption is CaptureGroup cg)
                 {   
 
-                    var method = typeof(ConcreteService).GetMethod("MapCGR");
-                    var genericMethod = method.MakeGenericMethod(context.DestinationType);
-                    value = genericMethod.Invoke(this, new object[] { context });
+                    if(cg.Modifier == CaptureModifier.NoneToOne && !context.TargetNode.SyntaxNodes.Any())
+                    {
+                        value = null;
+                    }
+                    else
+                    {
+                        var method = typeof(ConcreteService).GetMethod("MapCGR");
+                        var genericMethod = method.MakeGenericMethod(context.DestinationType);
+                        value = genericMethod.Invoke(this, new object[] { context });
+                    }
 
                 }
                 else
@@ -145,11 +152,14 @@ namespace Control.Services
                 : instanceAttr.Position
                 ;
 
-            return context
+            var filter = context
                 .TargetNode
                 .SyntaxNodes
                 .Where(x => x.Rule.RuleType == filterRuleType)
-                .Where(x => x.Rule.Name.ToLower() == property.GetFormName().ToLower())
+                ;
+
+            return filter
+                .Where(x => x.Rule.SnakeCase() == property.GetFormName())
                 .Skip(instance)
                 .First()
                 ;

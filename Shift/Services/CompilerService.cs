@@ -356,7 +356,7 @@ namespace {type.Namespace}
                 WhileControl => "while"
             };
 
-            var condition = BuildBinaryExpressionSource(control.Condition);
+            var condition = BuildConditionalOrExpressionSource(control.Condition);
             var block = BuildBlockSource(control.Block);
 
             return $"{name}({condition})\r\n\t\t\t{{{block}\t\t\t}}\r\n";
@@ -413,39 +413,119 @@ namespace {type.Namespace}
 
             return expression switch
             {
-                BinaryExpression binary => BuildBinaryExpressionSource(binary),
-                UnaryExpression unary => BuildUnaryExpressionSource(unary)
+                ConditionalOrExpression conditionalOrExpression => BuildConditionalOrExpressionSource(conditionalOrExpression),
             };
         }
 
-        public string BuildBinaryExpressionSource(BinaryExpression binaryExpression)
+        public string BuildConditionalOrExpressionSource(ConditionalOrExpression expr)
         {
 
-            var left = BuildUnaryExpressionSource(binaryExpression.Left);
-            var operatorSource = BuildOperatorSource(binaryExpression.Operator);
-            var right = BuildUnaryExpressionSource(binaryExpression.Right);
+            var left = BuildConditionalAndExpressionSource(expr.ConditionalAndExpression);
+            var chain = expr
+                .ConditionalAndExpressions
+                .Select(BuildConditionalAndExpressionSource)
+                .Aggregate(left, (x,y) => $"{x} OR {y}")
+                ;
 
-            return $"{left} {operatorSource} {right}";
+            return chain;
 
         }
 
-        public string BuildOperatorSource(BinaryOperator op)
+        public string BuildConditionalAndExpressionSource(ConditionalAndExpression expr)
+        {
+            var left = BuildEqualityExpressionSource(expr.EqualityExpression);
+            var chain = expr
+                .EqualityExpressions
+                .Select(BuildEqualityExpressionSource)
+                .Aggregate(left, (x, y) => $"{x} AND {y}")
+                ;
+
+            return chain;
+        }
+
+        public string BuildEqualityExpressionSource(EqualityExpression expr)
         {
 
+            var left = BuildRelationalExpressionSource(expr.Left);
+
+            if(expr.Right is null)
+            {
+                return left;
+            }
+
+            var op = expr.EqualityOperator switch
+            {
+                EqualityOperator.Equals => "==",
+                EqualityOperator.NotEquals => "!="
+            };
+
+            var right = BuildRelationalExpressionSource(expr.Right);
+
+            return $"{left} {op} {right}";
+        }
+
+        public string BuildRelationalExpressionSource(RelationalExpression expr)
+        {
+            var left = BuildAdditiveExpressionSource(expr.Left);
+
+            if (expr.Right is null)
+            {
+                return left;
+            }
+
+            var op = expr.RelationalOperator switch
+            {
+                RelationalOperator.GreaterThan => ">",
+                RelationalOperator.GreaterThanOrEqual => ">=",
+                RelationalOperator.LessThan => "<",
+                RelationalOperator.LessThanOrEqual => "<=",
+            };
+
+            var right = BuildAdditiveExpressionSource(expr.Right);
+
+            return $"{left} {op} {right}";
+        }
+
+        public string BuildAdditiveExpressionSource(AdditiveExpression expr)
+        {
+            var left = BuildMultiplicativeExpressionSource(expr.MultiplicativeExpression);
+            var chain = expr
+                .MultiplicativeExpressions
+                .Select(x => (BuildAdditiveOperatorSource(x.op), BuildMultiplicativeExpressionSource(x.expr)))
+                .Aggregate(left, (x, y) => $"{x} {y.Item1} {y.Item2}")
+                ;
+
+            return chain;
+        }
+
+        public string BuildAdditiveOperatorSource(AdditiveOperator op)
+        {
             return op switch
             {
-                BinaryOperator.Equals => "==",
-                BinaryOperator.NotEquals => "!=",
-                BinaryOperator.GreaterThan => ">",
-                BinaryOperator.GreaterThanOrEqual => ">=",
-                BinaryOperator.LessThan => "<",
-                BinaryOperator.LessThanOrEqual => "<=",
-                BinaryOperator.Addition => "+",
-                BinaryOperator.Subtraction => "-",
-                BinaryOperator.Multiplication => "*",
-                BinaryOperator.Division => "/"
+                AdditiveOperator.Addition => "+",
+                AdditiveOperator.Subtraction => "-"
             };
+        }
 
+        public string BuildMultiplicativeExpressionSource(MultiplicativeExpression expr)
+        {
+            var left = BuildUnaryExpressionSource(expr.UnaryExpression);
+            var chain = expr
+                .UnaryExpressions
+                .Select(x => (BuildMultiplicativeOperatorSource(x.op), BuildUnaryExpressionSource(x.expr)))
+                .Aggregate(left, (x, y) => $"{x} {y.Item1} {y.Item2}")
+                ;
+
+            return chain;
+        }
+
+        public string BuildMultiplicativeOperatorSource(MultiplicativeOperator op)
+        {
+            return op switch
+            {
+                MultiplicativeOperator.Multiplication => "*",
+                MultiplicativeOperator.Division => "/"
+            };
         }
 
         public string BuildUnaryExpressionSource(UnaryExpression unaryExpression)

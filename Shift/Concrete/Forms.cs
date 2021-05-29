@@ -108,22 +108,17 @@ namespace Shift.Concrete
 
     public class Statement : Option<ControlStatement, Declaration, Assignment, ReturnExpression, ExpressionStatement> { }
 
-    [Form("control_statement")]
     public class ControlStatement : Option<IfControl, WhileControl> { }
 
-    [Form("if_control")]
     public class IfControl
     {
-        [Form("binary_expression")]
-        public BinaryExpression Condition { get; set; }
+        public ConditionalOrExpression Condition { get; set; }
         public Block Block { get; set; }
     }
 
-    [Form("while_control")]
     public class WhileControl
     {
-        [Form("binary_expression")]
-        public BinaryExpression Condition { get; set; }
+        public ConditionalOrExpression Condition { get; set; }
         public Block Block { get; set; }
     }
 
@@ -153,54 +148,30 @@ namespace Shift.Concrete
 
     }
 
-    [Form("return_expression")]
     public class ReturnExpression
     {
         public Expression Expression { get; set; }
     }
 
-    [Form("expression_statement")]
     public class ExpressionStatement
     {
         public Expression Expression { get; set; }
     }
 
-    public class Expression : Option<BinaryExpression, UnaryExpression> { }
+    public class Expression : Option<ConditionalOrExpression> { }
 
-    [Form("binary_expression")]
-    public class BinaryExpression
-    {
-        [Form("unary_expression")]
-        [Instance(0)]
-        public UnaryExpression Left { get; set; }
 
-        [Form("binary_operator")]
-        public BinaryOperator Operator { get; set; }
-
-        [Form("unary_expression")]
-        [Instance(1)]
-        public UnaryExpression Right { get; set; }
-    }
-
-    [Form("binary_operator")]
-    public class BinaryOperator : TokenValue { }
-
-    [Form("unary_expression")]
     public class UnaryExpression
     {
-        [Form("main_expression")]
         public MainExpression MainExpression { get; set; }
     }
 
-    [Form("main_expression")]
     public class MainExpression
     {
-        [Form("expression_start")]
         public ExpressionStart ExpressionStart { get; set; }
         public List<ExpressionChain> ExpressionChains { get; set; }
     }
 
-    [Form("expression_start")]
     public class ExpressionStart : Option<Literal, Identifier, ParensExpression, NewExpression, Invocation> { }
 
     public class Literal : Option<Boolean, String, TokenValue> { }
@@ -211,14 +182,12 @@ namespace Shift.Concrete
         public string STRING { get; set; }
     }
 
-    [Form("parens_expression")]
     public class ParensExpression
     {
         [Direct]
         public Expression Expression { get; set; }
     }
 
-    [Form("new_expression")]
     public class NewExpression
     {
         public Identifier Identifier { get; set; }
@@ -244,11 +213,8 @@ namespace Shift.Concrete
         public Expression Expression { get; set; }
     }
 
-    [Form("expression_chain")]
     public class ExpressionChain : Option<MemberAccess, Invocation> { }
 
-
-    [Form("member_access")]
     public class MemberAccess
     {
         public Identifier Identifier { get; set; }

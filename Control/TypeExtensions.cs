@@ -18,15 +18,9 @@ namespace Control
         public static string GetFormName(this Type type)
         {
 
-            var formAttr = type
-                .GetCustomAttributes(typeof(FormAttribute), true)
-                .FirstOrDefault()
-                as FormAttribute
-                ;
-
-            return formAttr is null
-                ? type.Name
-                : formAttr.Name
+            return type
+                .Name
+                .ToSnakeCase()
                 ;
 
         }
@@ -34,15 +28,9 @@ namespace Control
         public static string GetFormName(this PropertyInfo property)
         {
 
-            var formAttr = property
-                .GetCustomAttributes(typeof(FormAttribute), true)
-                .FirstOrDefault()
-                as FormAttribute
-                ;
-
-            return formAttr is null
+            return property.PropertyType == typeof(string)
                 ? property.Name
-                : formAttr.Name
+                : property.PropertyType.Name.ToSnakeCase()
                 ;
 
         }

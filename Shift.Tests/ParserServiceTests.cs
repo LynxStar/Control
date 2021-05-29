@@ -66,7 +66,7 @@ namespace Shift.Tests
 
             var node = ASTTester(source, "expression");
 
-            node.UnaryToStart.Literal["INTEGER"].Capture.Should().Be("7");
+            node.ConditionalOrExprToStart.Literal["INTEGER"].Capture.Should().Be("7");
 
 
         }
@@ -262,9 +262,9 @@ library blue
                 .InvocationArgExpressions
                 ;
 
-            expressions[0].UnaryToStart.Literal["INTEGER"].Capture.Should().Be("6");
-            expressions[1].UnaryToStart.Literal["INTEGER"].Capture.Should().Be("7");
-            expressions[2].UnaryToStart.Literal["INTEGER"].Capture.Should().Be("8");
+            expressions[0].ConditionalOrExprToStart.Literal["INTEGER"].Capture.Should().Be("6");
+            expressions[1].ConditionalOrExprToStart.Literal["INTEGER"].Capture.Should().Be("7");
+            expressions[2].ConditionalOrExprToStart.Literal["INTEGER"].Capture.Should().Be("8");
 
         }
 
@@ -280,7 +280,7 @@ library blue
                 .InvocationArgExpressions
                 ;
 
-            expressions[0].UnaryToStart.Literal["INTEGER"].Capture.Should().Be("7");
+            expressions[0].ConditionalOrExprToStart.Literal["INTEGER"].Capture.Should().Be("7");
 
         }
 
@@ -299,11 +299,11 @@ library blue
             declaration.TypeDef.Type.TokenValue.Should().Be("var");
             declaration.TypeDef.Identifier.TokenValue.Should().Be("beeds");
 
-            var newExpression = declaration.CGR.First().Expression.UnaryToStart.NewExpression;
+            var newExpression = declaration.CGR.First().Expression.ConditionalOrExprToStart.NewExpression;
 
             newExpression.Identifier.TokenValue.Should().Be("datastruct");
 
-            newExpression.Invocation.InvocationArgExpressions[0].UnaryToStart.Literal["INTEGER"].Capture.Should().Be("7");
+            newExpression.Invocation.InvocationArgExpressions[0].ConditionalOrExprToStart.Literal["INTEGER"].Capture.Should().Be("7");
 
         }
 
@@ -343,13 +343,12 @@ library blue
             accessor[2].Should().Be("e");
 
             var mainExpression = assignment
-                .Expression
-                .UnaryExpression
+                .ExpToUnary
                 .MainExpression
                 ;
 
             mainExpression.ExpressionStart.Identifier.TokenValue.Should().Be("bob");
-            mainExpression.Chain[0].Invocation.InvocationArgExpressions[0].UnaryToStart.Literal["INTEGER"].Capture.Should().Be("7");
+            mainExpression.Chain[0].Invocation.InvocationArgExpressions[0].ConditionalOrExprToStart.Literal["INTEGER"].Capture.Should().Be("7");
 
 
         }
@@ -364,12 +363,11 @@ library blue
 
             var mainExpression = node
                 .ExpressionStatement
-                .Expression
-                .UnaryExpression
+                .ExpToUnary
                 .MainExpression
                 ;
 
-            mainExpression.ExpressionStart.ParenthesesExpression.UnaryToStart.Identifier.TokenValue.Should().Be("sid");
+            mainExpression.ExpressionStart.ParenthesesExpression.ConditionalOrExprToStart.Identifier.TokenValue.Should().Be("sid");
 
             mainExpression.Chain[0].MemberAccess.Identifier.TokenValue.Should().Be("bob");
             var foo = mainExpression.CGR.Count().Should().Be(2);
@@ -651,7 +649,7 @@ void ComparisonOperators()
         public void BinaryExpressionNotEqualsTest()
         {
             var source = @"0 != 0";
-            var node = ASTTester(source, "binary_expression");
+            var node = ASTTester(source, "equality_expression");
         }
 
         [TestMethod]

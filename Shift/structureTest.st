@@ -118,6 +118,16 @@ library Prover
 
     }
 
+    void MathOperators()
+    {
+
+        Test.True(3 + 3 == 6, "Equal Correct Test");
+        Test.True(3 != 4, "NotEqual Correct Test");
+        Test.True(3 < 4, "LessThan Correct Test");
+        Test.True(3 <= 3, "LessThanEqual Correct Test");
+
+    }
+
     void IfControl()
     {
 

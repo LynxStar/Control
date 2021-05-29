@@ -36,7 +36,11 @@ namespace Control
     {
         public object Value { get; set; }
     }
+    public class Option<T1> : IOption
+    {
+        public object Value { get; set; }
 
+    }
     public class Option<T1, T2> : IOption
     {
         public object Value { get; set; }
@@ -59,18 +63,6 @@ namespace Control
     {
         public string Token { get; set; }
         public string Value { get; set; }
-    }
-
-    public class FormAttribute : Attribute
-    { 
-    
-        public string Name { get; set; }
-
-        public FormAttribute(string name)
-        {
-            Name = name;
-        }
-
     }
 
     public class Instance : Attribute

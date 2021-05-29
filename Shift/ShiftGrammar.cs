@@ -117,8 +117,8 @@ form control_statement
 	: if_control
 	| while_control;
 
-form if_control : IF OPENPARENS binary_expression CLOSEPARENS block;
-form while_control : WHILE OPENPARENS binary_expression CLOSEPARENS block;
+form if_control : IF OPENPARENS conditional_or_expression CLOSEPARENS block;
+form while_control : WHILE OPENPARENS conditional_or_expression CLOSEPARENS block;
 
 ";
 
@@ -137,30 +137,49 @@ form return_expression : RETURN expression SEMICOLON;
 form expression_statement : expression SEMICOLON;
 
 form expression 
-	: binary_expression 
-	| unary_expression
+	: conditional_or_expression
+	;
+
+form conditional_or_expression : conditional_and_expression (OR conditional_and_expression)*;
+
+form conditional_and_expression : equality_expression (AND equality_expression)*;
+
+form equality_expression : relational_expression (equality_operator relational_expression)?;
+
+form equality_operator
+	: EQUALS
+	| NOT_EQUALS
+	;
+
+form relational_expression : additive_expression (relational_operator additive_expression)?;
+
+form relational_operator
+	: LESS_THAN_OR_EQUAL
+	| GREATER_THAN_OR_EQUAL
+	| LEFT_CAROT
+	| RIGHT_CAROT
+	;
+
+form additive_expression : multiplicative_expression (additive_operator multiplicative_expression)*;
+
+form additive_operator 
+	: PLUS
+	| MINUS
+	;
+
+form multiplicative_expression : unary_expression (multiplicative_operator unary_expression)*;
+
+
+form multiplicative_operator
+	: STAR
+	| FORWARDSLASH
 	;
 
 form unary_expression
 	: main_expression
 	;
 
-form binary_expression : unary_expression binary_operator unary_expression;
-
-form binary_operator
-	: EQUALS
-	| NOT_EQUALS
-	| LESS_THAN_OR_EQUAL
-	| GREATER_THAN_OR_EQUAL
-	| LEFT_CAROT
-	| RIGHT_CAROT
-	| PLUS
-	| MINUS
-	| STAR
-	| FORWARDSLASH
-	;
-
-form main_expression : expression_start (expression_chain)* ;
+form main_expression : expression_start (expression_chain)*;
 
 form expression_start
 	: literal
@@ -243,6 +262,8 @@ token DOT : '.';
 token SEMICOLON : ';';
 token COMMA : ',';
 
+token OR : '||';
+token AND : '&&';
 
 token LESS_THAN_OR_EQUAL : '<=';
 token GREATER_THAN_OR_EQUAL : '>=';

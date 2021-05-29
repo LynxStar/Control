@@ -121,19 +121,41 @@ namespace Control.Grammar
         public SyntaxNode ExpressionChain => this["expression_chain"];
         public SyntaxNode MemberAccess => this["member_access"];
 
+        public SyntaxNode conditional_or_expression => this["conditional_or_expression"];
+        public SyntaxNode conditional_and_expression => this["conditional_and_expression"];
+        public SyntaxNode equality_expression => this["equality_expression"];
+        public SyntaxNode relational_expression => this["relational_expression"];
+        public SyntaxNode additive_expression => this["additive_expression"];
+        public SyntaxNode multiplicative_expression => this["multiplicative_expression"];
+
 
         public SyntaxNode Invocation => this["invocation"];
 
-        public SyntaxNode ExpToStart => Expression
-                .UnaryExpression
-                .MainExpression
-                .ExpressionStart
-                ;
+        public SyntaxNode ExpToUnary => Expression
+            .conditional_or_expression
+            .conditional_and_expression
+            .equality_expression
+            .relational_expression
+            .additive_expression
+            .multiplicative_expression
+            .UnaryExpression
+            ;
 
-        public SyntaxNode UnaryToStart => UnaryExpression
-                .MainExpression
-                .ExpressionStart
-                ;
+        public SyntaxNode ExpToStart => ExpToUnary
+            .MainExpression
+            .ExpressionStart
+            ;
+
+        public SyntaxNode ConditionalOrExprToStart => conditional_or_expression
+            .conditional_and_expression
+            .equality_expression
+            .relational_expression
+            .additive_expression
+            .multiplicative_expression
+            .UnaryExpression
+            .MainExpression
+            .ExpressionStart
+            ;
 
         public SyntaxNode BasicLiteral => ExpToStart
                 .Literal
