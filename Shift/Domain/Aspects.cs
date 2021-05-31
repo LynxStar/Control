@@ -150,16 +150,16 @@ namespace Shift.Domain
         public Expression Expression { get; set; }
     }
 
-    public interface Expression : Statement
+    public class Expression : ExpressionBase, Statement
     {
     }
 
-    public class UnaryExpression
+    public class UnaryExpression : ExpressionBase
     {
         public MainExpression MainExpression { get; set; }
     }
 
-    public class MainExpression
+    public class MainExpression : ExpressionBase
     {
         public ExpressionStart ExpressionStart { get; set; }
         public List<ExpressionChain> ExpressionChain { get; set; } = new List<ExpressionChain>();

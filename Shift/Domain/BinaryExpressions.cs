@@ -7,19 +7,28 @@ using System.Threading.Tasks;
 namespace Shift.Domain
 {
 
+    public class ExpressionBase
+    {
+        public TypeMeta Output { get; set; }
+    }
+
+
     public class ConditionalOrExpression : Expression
     {
+
+        public TypeMeta Output { get; set; }
+
         public ConditionalAndExpression ConditionalAndExpression { get; set; }
         public List<ConditionalAndExpression> ConditionalAndExpressions { get; set; } = new List<ConditionalAndExpression>();
     }
 
-    public class ConditionalAndExpression
+    public class ConditionalAndExpression : ExpressionBase
     {
         public EqualityExpression EqualityExpression { get; set; }
         public List<EqualityExpression> EqualityExpressions { get; set; } = new List<EqualityExpression>();
     }
 
-    public class EqualityExpression
+    public class EqualityExpression : ExpressionBase
     {
         public RelationalExpression Left { get; set; }
         public EqualityOperator EqualityOperator { get; set; }
@@ -32,7 +41,7 @@ namespace Shift.Domain
         NotEquals
     }
 
-    public class RelationalExpression
+    public class RelationalExpression : ExpressionBase
     {
         public AdditiveExpression Left { get; set; }
         public RelationalOperator RelationalOperator { get; set; }
@@ -47,7 +56,7 @@ namespace Shift.Domain
         LessThanOrEqual
     }
 
-    public class AdditiveExpression
+    public class AdditiveExpression : ExpressionBase
     {
         public MultiplicativeExpression MultiplicativeExpression { get; set; }
         public List<(AdditiveOperator op, MultiplicativeExpression expr)> MultiplicativeExpressions { get; set; }
@@ -60,7 +69,7 @@ namespace Shift.Domain
         Subtraction
     }
 
-    public class MultiplicativeExpression
+    public class MultiplicativeExpression : ExpressionBase
     {
         public UnaryExpression UnaryExpression { get; set; }
         public List<(MultiplicativeOperator op, UnaryExpression expr)> UnaryExpressions { get; set; }

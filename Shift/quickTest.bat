@@ -1,4 +1,3 @@
-echo off
 cd ../
 dotnet build  >nul
 cd ./Shift/bin./Debug./net5.0/

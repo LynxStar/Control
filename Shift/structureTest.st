@@ -96,21 +96,32 @@ service Bob
 	
 }
 
-library Prover
+library BinaryExpressions
 {
 
-    void ComparisonOperators()
+    void All()
     {
-    
+        EqualityOperators();
+        RelationalOperators();
+    }
+
+    void EqualityOperators()
+    {
         Test.True(3 == 3, "Equal Correct Test");
         Test.True(3 != 4, "NotEqual Correct Test");
+        Test.False(3 != 3, "Equal Incorrect Test");
+        Test.False(3 == 4, "NotEqual Incorrect Test");
+
+    }
+
+    void RelationalOperators()
+    {
+    
         Test.True(3 < 4, "LessThan Correct Test");
         Test.True(3 <= 3, "LessThanEqual Correct Test");
         Test.True(5 > 3, "GreaterThan Correct Test");
         Test.True(3 >= 3, "GreaterThanEqual Correct Test");
 
-        Test.False(3 != 3, "Equal Incorrect Test");
-        Test.False(3 == 4, "NotEqual Incorrect Test");
         Test.False(3 > 4, "LessThan Incorrect Test");
         Test.False(4 <= 3, "LessThanEqual Incorrect Test");
         Test.False(3 > 5, "GreaterThan Incorrect Test");
@@ -118,14 +129,31 @@ library Prover
 
     }
 
-    void MathOperators()
+    void AdditiveOperators()
     {
 
-        Test.True(3 + 3 == 6, "Equal Correct Test");
-        Test.True(3 != 4, "NotEqual Correct Test");
-        Test.True(3 < 4, "LessThan Correct Test");
-        Test.True(3 <= 3, "LessThanEqual Correct Test");
+        Test.True(3 + 3 == 6, "Addition Test");
+        Test.True(10 - 3 == 7, "Subtraction Test");
 
+    }
+
+    void MultiplitiveOperators()
+    {
+        Test.True(3 * 4 == 12, "Multiplication Test");
+        Test.True(12 / 4 == 3, "Division Test");
+    }
+
+    
+
+}
+
+library ControlStatements
+{
+
+    void All()
+    {
+        IfControl();
+        WhileControl();
     }
 
     void IfControl()
@@ -160,42 +188,15 @@ library Prover
 
         var i = 0;
 
-        while(i != 5)
+        while(i < 5)
         {
 
-            //i = i + 1;
+            i = i + 1;
 
         }
 
-    }
+        Test.True(i == 5, "While condition check");
 
-    void Old()
-    {
-        int foo = 3;
-
-        var testService = new Bob();
-        var testServiceConstructor = new Bob(5);
-
-        Test.Check(foo, 3, "basic");
-        Test.Check(testService.Foo, 0, "basic");
-
-        var binaryTest = 5 == 5;
-        var binaryTest2 = 5 != 6;
-
-        Test.True(binaryTest, "basic");
-        Test.True(binaryTest2, "basic");
-
-        Test.True(5 == 5, "basic");
-        Test.True(5 != 6, "basic");
-        Test.Check(5 == 500, false, "basic");
-        Test.Check(7 != 7, false, "basic");
-
-
-        testServiceConstructor.Foo = 8;
-
-        var methodCheck = testServiceConstructor.A();
-
-        Test.True(testServiceConstructor.Foo == methodCheck, "basic");
     }
 
 }
@@ -207,8 +208,8 @@ library Program
     {
     
         
-        Prover.ComparisonOperators();
-        Prover.IfControl();
+        BinaryExpressions.All();
+        ControlStatements.All();
 
     }
 
