@@ -13,7 +13,7 @@ using System.Xml.Linq;
 namespace Shift.Services
 {
     
-    public class FrameworkAssembly
+    public class AssemblySchema
     {
         public string Path { get; set; }
         public string AssemblyName { get; set; }
@@ -22,92 +22,112 @@ namespace Shift.Services
         public string FileVersion { get; set; }
         public string Hash { get; set; }
 
-        public List<ExternalType> ExternalTypes { get; set; } = new List<ExternalType>();
+        public List<ExportedType> ExportedTypes { get; set; } = new List<ExportedType>();
 
     }
 
-    public class ExternalType : Domain.Type
+    public class ExportedType : Domain.Type
     {
-
-        public string Namespace { get; set; }
         public string FullName { get; set; }
         public string AssemblySource { get; set; }
 
-        public Dictionary<string, Field> Fields = new Dictionary<string, Field>();
-        public Dictionary<string, List<Method>> Methods = new Dictionary<string, List<Method>>();
-
     }
 
-    public class ExternalPlaceholder : Domain.Type { }
+    public class SeedType : Domain.Type
+    {
+        public string CSharpNamespace { get; set; }
+        public MainExpression Initializer { get; set; }
+    }
 
     public class TypeService
     {
 
-        private readonly Dictionary<string, List<ExternalType>> SeedTypes = new Dictionary<string, List<ExternalType>>();
+        private readonly Dictionary<string, SeedType> SeedTypes = new Dictionary<string, SeedType>();
+
+        private readonly Dictionary<string, AssemblySchema> externalAssemblies = new Dictionary<string, AssemblySchema>();
+        private readonly Dictionary<string, List<ExportedType>> exportedTypes = new Dictionary<string, List<ExportedType>>();
 
         public TypeService()
         {
 
-            SeedTypes.Add("int", new List<ExternalType> { new ExternalType { Name = "int", AssemblySource = "Bootstraped", Namespace = "Shift" } });
-            SeedTypes.Add("string", new List<ExternalType> { new ExternalType { Name = "string", AssemblySource = "Bootstraped", Namespace = "Shift" } });
-            SeedTypes.Add("bool", new List<ExternalType> { new ExternalType { Name = "bool", AssemblySource = "Bootstraped", Namespace = "Shift" } });
+            SeedTypes.Add("void", new SeedType { Name = "void", Namespace = "Shift" });
+            SeedTypes.Add("string", new SeedType 
+            {
+                Name = "string", 
+                Namespace = "Shift", 
+                CSharpNamespace = "System",
+                Initializer = new MainExpression
+                {
+                    ExpressionStart = new Identifier { Path = "String" },
+                    ExpressionChain = new List<ExpressionChain> 
+                    {
+                        new Identifier { Path = "Empty" }
+                    }
+                }
+            });
 
-            SeedTypes.Add("object", new List<ExternalType> { new ExternalType { Name = "object", AssemblySource = "Bootstraped", Namespace = "Shift" } });
-            SeedTypes.Add("void", new List<ExternalType> { new ExternalType { Name = "void", AssemblySource = "Bootstraped", Namespace = "Shift" } });
+            var assemblies = LoadExternalTypes();
 
-        }
-
-        public Application LinkExternalTypes(Application app)
-        {
-
-            var externalTypes = LoadExternalTypes();
-
-            var unknownTypes = app
-                .Types
-                .Where(x => x.Value.Source is null)
-                .Where(x => x.Key != "var")//We'll infer var later
+            externalAssemblies = assemblies
+                .ToDictionary(x => x.AssemblyName)
                 ;
 
-            foreach(var unknownType in unknownTypes)
-            {
-
-                if(externalTypes.ContainsKey(unknownType.Key))
-                {
-
-                    var found = externalTypes[unknownType.Key];
-
-                    if (found.Count() > 1)
-                    {
-
-                        var error = found
-                            .Select(x => x.FullName)
-                            .Aggregate((x, y) => $"{x} and {y}")
-                            ;
-
-                        throw new Exception($"Ambigiuous reference resolving [{unknownType.Key}] amongst {error}");
-                    }
-
-                    var matchedType = found.Single();
-
-                    unknownType.Value.Source = new TypeSource { From = $"External Assembly" };
-                    unknownType.Value.BackingType = matchedType;
-
-                }
-                else
-                {
-                    throw new Exception("Uknown type internally or externally");
-                }
-
-            }
-
-            return app;
+            exportedTypes = assemblies
+                .SelectMany(x => x.ExportedTypes)
+                .GroupBy(x => x.Name)
+                .ToDictionary(x => x.Key, x => x.ToList())
+                ;
 
         }
 
-        private Dictionary<string, List<ExternalType>> LoadExternalTypes()
+        public Domain.Type RetrieveExternalType(TrackedType trackedType)
         {
 
-            return SeedTypes;
+            var key = trackedType.Name;
+
+            //Replace with type aliases down the road
+
+            key = key switch
+            {
+                "int" => "Int32",
+                "bool" => "Boolean",
+                _ => key
+            };
+
+            if (SeedTypes.ContainsKey(key))
+            {
+                return SeedTypes[key];
+            }
+            else if (exportedTypes.ContainsKey(key))
+            {
+
+                var found = exportedTypes[key];
+
+                if (found.Count() > 1)
+                {
+
+                    var error = found
+                        .Select(x => x.FullName)
+                        .Aggregate((x, y) => $"{x} and {y}")
+                        ;
+
+                    throw new Exception($"Ambigiuous reference resolving [{key}] amongst {error}");
+                }
+
+                var matchedType = found.Single();
+
+                return matchedType;
+
+            }
+            else
+            {
+                throw new Exception("Uknown type internally or externally");
+            }
+
+        }
+
+        private IEnumerable<AssemblySchema> LoadExternalTypes()
+        {
 
             var cachedAssemblies = LoadFromCache();
 
@@ -126,15 +146,15 @@ namespace Shift.Services
                 //See if it's already cached
                 if (cachedAssemblies.ContainsKey(assembly.AssemblyName) && cachedAssemblies[assembly.AssemblyName].Hash == assembly.Hash)
                 {
-                    assembly.ExternalTypes = cachedAssemblies[assembly.AssemblyName].ExternalTypes;
+                    assembly.ExportedTypes = cachedAssemblies[assembly.AssemblyName].ExportedTypes;
                 }
                 else
                 {
                     var loadedAssembly = mlc.LoadFromAssemblyPath($"C:/Program Files/dotnet/packs/Microsoft.NETCore.App.Ref/5.0.0/{assembly.Path}");
 
-                    assembly.ExternalTypes = loadedAssembly
+                    assembly.ExportedTypes = loadedAssembly
                         .ExportedTypes
-                        .Select(x => BuildExternalType(x, assembly))
+                        .Select(x => BuildExportedType(x, assembly))
                         .ToList()
                         ;
                 }
@@ -143,18 +163,14 @@ namespace Shift.Services
 
             SaveToCache(assemblies);
 
-            return assemblies
-                .SelectMany(x => x.ExternalTypes)
-                .GroupBy(x => x.Name)
-                .ToDictionary(x => x.Key, x => x.ToList())
-                ;
+            return assemblies;
 
         }
 
-        public ExternalType BuildExternalType(System.Type type, FrameworkAssembly assembly)
+        public ExportedType BuildExportedType(System.Type type, AssemblySchema assembly)
         {
 
-            var externalType = new ExternalType
+            var externalType = new ExportedType
             {
                 Name = type.Name,
                 Namespace = type.Namespace,
@@ -162,113 +178,33 @@ namespace Shift.Services
                 AssemblySource = assembly.AssemblyName
             };
 
-            var fields = type
-                .GetFields()
-                .ToList()
-                ;
-
-            var types = type
-                .GetProperties()
-                .Where(x => !x.GetIndexParameters().Any())//For now don't support indexers
-                .ToList()
-                ;
-
-            foreach (var field in fields)
-            {
-
-                var externalField = new Field 
-                { 
-                    Identifier = field.Name, 
-                    Type = new TypeMeta
-                    {
-                        BackingType = new ExternalPlaceholder { Name = field.FieldType.FullName },
-                    }
-                };
-
-                externalType.Fields.Add(field.Name, externalField);
-            }
-
-            foreach (var property in types)
-            {
-
-                var externalField = new Field
-                {
-                    Identifier = property.Name,
-                    Type = new TypeMeta
-                    {
-                        BackingType = new ExternalPlaceholder { Name = property.PropertyType.FullName },
-                    }
-                };
-
-                externalType.Fields.Add(property.Name, externalField);
-            }
-
-            var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Where(m => !m.IsSpecialName);
-
-            externalType.Methods = methods
-                .Select(x => BuildExternalMethod(x))
-                .GroupBy(x => x.Signature.Identifier)
-                .ToDictionary(x => x.Key, x => x.ToList())
-                ;
-
-            //Constructors haven't been implemented yet so unnecessary
-            //var constructors = type.GetConstructors();
-
             return externalType;
 
         }
 
-        private static Method BuildExternalMethod(MethodInfo method)
-        {
-            var externalMethod = new Method
-            {
-                Signature = new Signature
-                {
-                    Identifier = method.Name,
-                    Type = new TypeMeta
-                    {
-                        BackingType = new ExternalPlaceholder { Name = method.ReturnType.FullName },
-                    },
-                }
-            };
-
-            externalMethod.Signature.Parameters = method
-                .GetParameters()
-                .Select(x => new Parameter
-                {
-                    Identifier = x.Name,
-                    Type = new TypeMeta
-                    {
-                        BackingType = new ExternalPlaceholder { Name = x.ParameterType.FullName },
-                    }
-                })
-                .ToList();
-            return externalMethod;
-        }
-
-        private Dictionary<string, FrameworkAssembly> LoadFromCache()
+        private Dictionary<string, AssemblySchema> LoadFromCache()
         {
             if (!Directory.Exists("./assemblyMetaCache"))
             {
                 Directory.CreateDirectory("./assemblyMetaCache");
             }
 
-            Dictionary<string, FrameworkAssembly> cachedAssemblies;
+            Dictionary<string, AssemblySchema> cachedAssemblies;
 
             if (File.Exists("./assemblyMetaCache/assemblyInfo.json"))
             {
                 var json = File.ReadAllText("./assemblyMetaCache/assemblyInfo.json");
-                cachedAssemblies = JsonConvert.DeserializeObject<Dictionary<string, FrameworkAssembly>>(json);
+                cachedAssemblies = JsonConvert.DeserializeObject<Dictionary<string, AssemblySchema>>(json);
             }
             else
             {
-                cachedAssemblies = new Dictionary<string, FrameworkAssembly>();
+                cachedAssemblies = new Dictionary<string, AssemblySchema>();
             }
 
             return cachedAssemblies;
         }
 
-        private void SaveToCache(IEnumerable<FrameworkAssembly> assemblies)
+        private void SaveToCache(IEnumerable<AssemblySchema> assemblies)
         {
 
             var cacheFormat = assemblies
@@ -279,7 +215,7 @@ namespace Shift.Services
 
         }
 
-        private IEnumerable<FrameworkAssembly> GetSDKAssemblies()
+        private IEnumerable<AssemblySchema> GetSDKAssemblies()
         {
             var frameworkList = File.ReadAllText(@"C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\5.0.0\data\FrameworkList.xml");
             var doc = XDocument.Parse(frameworkList);
@@ -289,7 +225,7 @@ namespace Shift.Services
             var assemblies = nodes
                 .Select(x =>
                 {
-                    var assembly = new FrameworkAssembly
+                    var assembly = new AssemblySchema
                     {
                         Path = x.Attribute("Path").Value,
                         AssemblyName = x.Attribute("AssemblyName").Value,

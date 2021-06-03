@@ -32,7 +32,7 @@ namespace Shift
 
             var typeService = new TypeService();
 
-            app = typeService.LinkExternalTypes(app);
+            app = appService.LinkSchemaTrackedTypes(app, typeService);
 
             var compilerService = new CompilerService();
 

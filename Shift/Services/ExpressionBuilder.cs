@@ -11,8 +11,22 @@ namespace Shift.Services
     public class ExpressionBuilder
     {
 
-        public Expression NewDefault(string typeName)
+        public Expression TypeDefaultExpression(Domain.Type type)
         {
+
+            var mainExpression = type switch
+            {
+                SeedType seed => seed.Initializer,
+                _ => new MainExpression
+                {
+                    ExpressionStart = new NewExpression
+                    {
+                        Identifier = new Identifier { Path = type.Name },
+                        Invocation = new Invocation { }
+                    }
+                }
+            };
+
 
             return new ConditionalOrExpression
             {
@@ -28,14 +42,7 @@ namespace Shift.Services
                                 {
                                     UnaryExpression = new UnaryExpression
                                     {
-                                        MainExpression = new MainExpression
-                                        {
-                                            ExpressionStart = new NewExpression
-                                            {
-                                                Identifier = new Identifier { Path = typeName },
-                                                Invocation = new Invocation { }
-                                            }
-                                        }
+                                        MainExpression = mainExpression
                                     }
                                 }
                             }

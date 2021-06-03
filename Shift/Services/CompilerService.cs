@@ -104,8 +104,6 @@ namespace Shift.Services
                 .Where(x => x.Key != "var")
                 .Where(x => x.Key != "Program")
                 .Select(x => x.Value)
-                .Where(x => x.Source.From == "User Defined")
-                .Select(x => x.BackingType)
                 .ToList()
                 .ForEach(TranspileType)
                 ;
@@ -113,7 +111,7 @@ namespace Shift.Services
             var entryPoint = (app
                 .Types
                 ["Program"]
-                .BackingType as Library)
+                as Library)
                 .Methods
                 .Single(x => x.Key == "Main")
                 ;
@@ -196,12 +194,13 @@ namespace {type.Namespace}
         public string BuildFieldSource(Field field)
         {
 
-            var initializer = field.Type.BackingType.Name == "string"
-                ? "String.Empty"
-                : $"new {field.Type.BackingType.Name}()"
+            var initializer = expressionBuilder
+                .TypeDefaultExpression(field.Type.BackingType)
                 ;
 
-            return $"public {field.Type.BackingType.Name} {field.Identifier} {{ get; set; }} = {initializer};";
+            var initializerSource = BuildExpressionSource(initializer);
+
+            return $"public {field.Type.BackingType.Name} {field.Identifier} {{ get; set; }} = {initializerSource};";
         }
 
         public string BuildLibrarySource(Library library)
@@ -375,7 +374,7 @@ namespace {type.Namespace}
 
             var initializer = declaration.InitializerExpression is not null
                 ? declaration.InitializerExpression
-                : expressionBuilder.NewDefault(typeName)
+                : expressionBuilder.TypeDefaultExpression(declaration.TypeDefinition.Type.BackingType)
                 ;
 
             decSource = $"{decSource} = {BuildExpressionSource(initializer)}";

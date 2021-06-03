@@ -7,9 +7,67 @@ using System.Threading.Tasks;
 namespace Shift.Domain
 {
 
+    public class TypeTracker
+    {
+
+        public Dictionary<string, TrackedType> ConsumedTypes = new Dictionary<string, TrackedType>();
+
+
+        public TrackedType this[string name]
+        {
+            get
+            {
+                var type = ConsumedTypes.GetValueOrDefault(name);
+
+                if (type is null)
+                {
+                    type = new TrackedType { Name = name };
+                    ConsumedTypes.Add(name, type);
+                }
+
+                return type;
+
+
+            }
+        }
+
+        public TrackedType this[Type type]
+        {
+            get
+            {
+                //Blow up for now
+                return ConsumedTypes[type.Name];
+            }
+        }
+
+        public T MapTypeDef<T>(Concrete.TypeDef typeDef) where T : TypeDefinition, new()
+        {
+
+            T target = new T();
+
+            target.Type = this[typeDef.Type.IDENTIFIER];
+            target.Identifier = typeDef.Identifier;
+
+            return target;
+
+        }
+    }
+
     //Is this necessary?
     public class Application : Namespace
     {
+
+        public TypeTracker Tracker { get; set; } = new TypeTracker();
+
+
+        public void AddType(Type type)
+        {
+
+            var tracked = Tracker[type];
+            tracked.BackingType = type;
+
+            Types.Add(type.Name, type);
+        }
 
     }
 
@@ -25,58 +83,42 @@ namespace Shift.Domain
         public Namespace Parent { get; set; }
 
         public Dictionary<string, Namespace> Namespaces = new Dictionary<string, Namespace>();
-        public Dictionary<string, TypeMeta> Types = new Dictionary<string, TypeMeta>();
+        public Dictionary<string, Type> Types = new Dictionary<string, Type>();
 
-        public TypeMeta this[string name]
-        {
-            get
-            {
-                var type = Types.GetValueOrDefault(name);
-
-                if (type is null)
-                {
-                    type = new TypeMeta { Name = name };
-                    Types.Add(name, type);
-                }
-
-                return type;
-
-
-            }
-        }
-
-        public T MapTypeDef<T>(Concrete.TypeDef typeDef) where T : TypeDefinition, new()
-        {
-
-            T target = new T();
-
-            target.Type = this[typeDef.Type.IDENTIFIER];
-            target.Identifier = typeDef.Identifier;
-
-            return target;
-
-        }
 
     }
 
-    public class TypeSource
+    public enum TypeSource
     {
-        public string From { get; set; }
-        public static TypeSource UserDefined => new TypeSource { From = "User Defined" };
-
+        Unknown,
+        User,
+        External,
+        Seeded
     }
 
-    public class TypeMeta
+    public class TrackedType
     {
         public string Name { get; set; }
         public Type BackingType { get; set; }
         public TypeSource Source { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Name} from: {Source}";
+        }
+
     }
 
     public class Type
     {
         public string Name { get; set; }
         public string Namespace { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Namespace}.{Name}";
+        }
+
     }
 
     public class Data : Type
@@ -88,7 +130,7 @@ namespace Shift.Domain
 
     public class TypeDefinition
     {
-        public TypeMeta Type { get; set; }
+        public TrackedType Type { get; set; }
         public string Identifier { get; set; }
     }
 

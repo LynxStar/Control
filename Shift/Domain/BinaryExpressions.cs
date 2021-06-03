@@ -9,14 +9,14 @@ namespace Shift.Domain
 
     public class ExpressionBase
     {
-        public TypeMeta Output { get; set; }
+        public TrackedType Output { get; set; }
     }
 
 
     public class ConditionalOrExpression : Expression
     {
 
-        public TypeMeta Output { get; set; }
+        public TrackedType Output { get; set; }
 
         public ConditionalAndExpression ConditionalAndExpression { get; set; }
         public List<ConditionalAndExpression> ConditionalAndExpressions { get; set; } = new List<ConditionalAndExpression>();

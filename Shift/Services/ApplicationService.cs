@@ -22,11 +22,11 @@ namespace Shift.Services
             foreach(var aspect in source.Aspects)
             {
 
-                var meta = application[(aspect.Value as Concrete.Identifiable).Identifier];
+                var key = application.Tracker[(aspect.Value as Concrete.Identifiable).Identifier];
 
-                meta.Source = TypeSource.UserDefined;
+                key.Source = TypeSource.User;
 
-                meta.BackingType = aspect.Value switch
+                Domain.Type type = aspect.Value switch
                 {
                     Concrete.Data data => MapData(data, application),
                     Concrete.Library library => MapLibrary(library, application),
@@ -34,9 +34,39 @@ namespace Shift.Services
                     _ => throw new Exception("What type of aspect is this?")
                 };
 
+                application.AddType(type);
+
+
             }
 
             return application;
+
+        }
+
+        public Application LinkSchemaTrackedTypes(Application app, TypeService typeService)
+        {
+
+            var unknownTypes = app
+                .Tracker
+                .ConsumedTypes
+                .Where(x => x.Value.Source is TypeSource.Unknown)
+                .Where(x => x.Key != "var")//We'll infer var later
+                .Select(x => x.Value)
+                .ToList()
+                ;
+
+            foreach(var unknown in unknownTypes)
+            {
+
+                unknown.BackingType = typeService.RetrieveExternalType(unknown);
+                unknown.Source = unknown.BackingType is SeedType
+                    ? TypeSource.Seeded
+                    : TypeSource.External
+                    ;
+
+            }
+
+            return app;
 
         }
 
@@ -62,7 +92,7 @@ namespace Shift.Services
         public Field MapField(Concrete.Field source, Application app)
         {
 
-            var field = app.MapTypeDef<Field>(source.TypeDef);
+            var field = app.Tracker.MapTypeDef<Field>(source.TypeDef);
 
             return field;
 
@@ -156,7 +186,7 @@ namespace Shift.Services
         {
 
             
-            var signature = app.MapTypeDef<Signature>(source.Signature.TypeDef);
+            var signature = app.Tracker.MapTypeDef<Signature>(source.Signature.TypeDef);
 
             var method = new Method
             {
@@ -178,7 +208,7 @@ namespace Shift.Services
         public Parameter MapParameter(Concrete.Parameter source, Application app)
         {
 
-            var parameter = app.MapTypeDef<Parameter>(source.TypeDef);
+            var parameter = app.Tracker.MapTypeDef<Parameter>(source.TypeDef);
 
             return parameter;
 
@@ -256,7 +286,7 @@ namespace Shift.Services
 
             var declaration = new Declaration();
 
-            declaration.TypeDefinition = app.MapTypeDef<TypeDefinition>(source.TypeDef);
+            declaration.TypeDefinition = app.Tracker.MapTypeDef<TypeDefinition>(source.TypeDef);
 
             if(source.Initializer is not null)
             {
