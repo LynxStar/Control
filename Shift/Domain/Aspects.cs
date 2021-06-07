@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Shift.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,13 @@ namespace Shift.Domain
 
         public Dictionary<string, TrackedType> ConsumedTypes = new Dictionary<string, TrackedType>();
 
+        public Func<string, TrackedType> InitialResolver = x => new TrackedType { Name = x };
+        public Func<string, TrackedType> Resolver { get; set; }
+
+        public TypeTracker()
+        {
+            Resolver = InitialResolver;
+        }
 
         public TrackedType this[string name]
         {
@@ -21,7 +29,7 @@ namespace Shift.Domain
 
                 if (type is null)
                 {
-                    type = new TrackedType { Name = name };
+                    type = Resolver(name);
                     ConsumedTypes.Add(name, type);
                 }
 
@@ -58,7 +66,6 @@ namespace Shift.Domain
     {
 
         public TypeTracker Tracker { get; set; } = new TypeTracker();
-
 
         public void AddType(Type type)
         {
@@ -98,6 +105,7 @@ namespace Shift.Domain
 
     public class TrackedType
     {
+
         public string Name { get; set; }
         public Type BackingType { get; set; }
         public TypeSource Source { get; set; }
@@ -111,6 +119,7 @@ namespace Shift.Domain
 
     public class Type
     {
+
         public string Name { get; set; }
         public string Namespace { get; set; }
 
@@ -121,9 +130,24 @@ namespace Shift.Domain
 
     }
 
-    public class Data : Type
+    public interface HasFields
     {
-        public Dictionary<string, Field> Fields = new Dictionary<string, Field>();
+        Dictionary<string, Field> Fields { get; set; }
+    }
+
+    public interface HasMethods
+    {
+        Dictionary<string, List<Method>> Methods { get; set; }
+    }
+
+    public interface HasConstructors
+    {
+        IEnumerable<Method> Constructors { get; set; }
+    }
+
+    public class Data : Type, HasFields
+    {
+        public Dictionary<string, Field> Fields { get; set; } = new Dictionary<string, Field>();
     }
 
     public class Field : TypeDefinition { }
@@ -134,16 +158,16 @@ namespace Shift.Domain
         public string Identifier { get; set; }
     }
 
-    public class Library : Type
+    public class Library : Type, HasMethods
     {
-        public Dictionary<string, List<Method>> Methods = new Dictionary<string, List<Method>>();
+        public Dictionary<string, List<Method>> Methods { get; set; } = new Dictionary<string, List<Method>>();
     }
 
-    public class Service : Type
+    public class Service : Type, HasFields, HasMethods, HasConstructors
     {
-        public Dictionary<string, Field> Fields = new Dictionary<string, Field>();
-        public Dictionary<string, List<Method>> Methods = new Dictionary<string, List<Method>>();
-        public Dictionary<string, List<Method>> Constructors = new Dictionary<string, List<Method>>();
+        public Dictionary<string, Field> Fields { get; set; } = new Dictionary<string, Field>();
+        public Dictionary<string, List<Method>> Methods { get; set; } = new Dictionary<string, List<Method>>();
+        public IEnumerable<Method> Constructors { get; set; } = new List<Method>();
     }
 
     public class Method

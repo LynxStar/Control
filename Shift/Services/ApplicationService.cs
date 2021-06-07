@@ -8,7 +8,7 @@ using Concrete = Shift.Concrete;
 
 namespace Shift.Services
 {
-    
+
     public class ApplicationService
     {
 
@@ -65,6 +65,15 @@ namespace Shift.Services
                     ;
 
             }
+
+            app.Tracker.Resolver = (x) =>
+            {
+                var tracked = app.Tracker.InitialResolver(x);
+                var exported = typeService.RetrieveExternalType(tracked);
+                tracked.Source = TypeSource.External;
+
+                return tracked;
+            };
 
             return app;
 
@@ -149,9 +158,7 @@ namespace Shift.Services
                 .ServiceMembers
                 .Select(x => x.Value)
                 .OfType<Concrete.Constructor>()
-                .Select(x => MapConstructor(x, service.Name, app))
-                .GroupBy(x => x.Signature.Identifier)
-                .ToDictionary(x => x.Key, x => x.ToList())
+                .Select(x => MapConstructor(x, service.Name, app));
                 ;
 
             return service;

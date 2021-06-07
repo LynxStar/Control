@@ -8,6 +8,39 @@ using System.Threading.Tasks;
 namespace Shift.Services
 {
     
+    public static class ExpressionExtensions
+    {
+
+        public static ConditionalOrExpression ToExpression(this MainExpression mainExpression)
+        {
+
+            return new ConditionalOrExpression
+            {
+                ConditionalAndExpression = new ConditionalAndExpression
+                {
+                    EqualityExpression = new EqualityExpression
+                    {
+                        Left = new RelationalExpression
+                        {
+                            Left = new AdditiveExpression
+                            {
+                                MultiplicativeExpression = new MultiplicativeExpression
+                                {
+                                    UnaryExpression = new UnaryExpression
+                                    {
+                                        MainExpression = mainExpression
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+        }
+
+    }
+
     public class ExpressionBuilder
     {
 
@@ -27,29 +60,7 @@ namespace Shift.Services
                 }
             };
 
-
-            return new ConditionalOrExpression
-            {
-                ConditionalAndExpression = new ConditionalAndExpression
-                {
-                    EqualityExpression = new EqualityExpression
-                    {
-                        Left = new RelationalExpression
-                        {
-                            Left = new AdditiveExpression
-                            { 
-                                MultiplicativeExpression = new MultiplicativeExpression
-                                {
-                                    UnaryExpression = new UnaryExpression
-                                    {
-                                        MainExpression = mainExpression
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            };
+            return mainExpression.ToExpression();
 
         }
 

@@ -28,11 +28,13 @@ namespace Shift
 
             var appService = new ApplicationService();
 
-            var app = appService.MapSourceToApplication(sourceTree);
+            var app = appService.MapSourceToApplication(sourceTree);//Stage 1, Build Schema
 
             var typeService = new TypeService();
 
-            app = appService.LinkSchemaTrackedTypes(app, typeService);
+            app = appService.LinkSchemaTrackedTypes(app, typeService);//Stage 2, Link high level schema objects
+
+            var enforced = new TypeEnforcer();
 
             var compilerService = new CompilerService();
 
