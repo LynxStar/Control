@@ -26,10 +26,12 @@ namespace Shift.Services
 
     }
 
-    public class ExportedType : Domain.Type
+    public class ExportedType : Domain.Type, HasConstructors
     {
+
         public string FullName { get; set; }
         public string AssemblySource { get; set; }
+        public IEnumerable<Method> Constructors { get; set; } = new List<Method>();
 
     }
 
@@ -170,7 +172,7 @@ namespace Shift.Services
         public ExportedType BuildExportedType(System.Type type, AssemblySchema assembly)
         {
 
-            var externalType = new ExportedType
+            var exportedType = new ExportedType
             {
                 Name = type.Name,
                 Namespace = type.Namespace,
@@ -178,7 +180,29 @@ namespace Shift.Services
                 AssemblySource = assembly.AssemblyName
             };
 
-            return externalType;
+            exportedType.Constructors = type
+                .GetConstructors()
+                .Select(BuildConstructor)
+                .ToList()
+                ;
+
+
+            return exportedType;
+
+        }
+
+        public Method BuildConstructor(ConstructorInfo constructorInfo)
+        {
+            return null;
+            var method = new Method
+            {
+                Signature = new Signature
+                {
+                    Identifier = "this",
+                    //Type = constructorInfo.//This requires loading in the resulting chain, 
+                    //the only way to avoid it would be to make this a lazy loaded thing: more performance but way higher chance of failure
+                }
+            };
 
         }
 

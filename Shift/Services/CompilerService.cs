@@ -99,6 +99,18 @@ namespace Shift.Services
         public string BuildAppSource(Application app)
         {
 
+            var unresolvedTypes = app
+                .Tracker
+                .ConsumedTypes
+                .Where(x => x.Key != "var")
+                .Where(x => x.Value.Source == TypeSource.Unknown)
+                ;
+
+            if(unresolvedTypes.Any())
+            {
+                throw new Exception("You failed to link everything wtf?");
+            }
+
             app
                 .Types
                 .Where(x => x.Key != "var")
@@ -239,7 +251,7 @@ namespace {type.Namespace}
                 .AggregateSafe(string.Empty, (x, y) => $"{x}\r\n\t\t{y}")
                 ;
 
-            var constructors = BuildConstructorsSource(service.Constructors.SelectMany(x => x.Value), service.Name);
+            var constructors = BuildConstructorsSource(service.Constructors, service.Name);
 
             return @$"
     public class {service.Name}
@@ -554,7 +566,8 @@ namespace {type.Namespace}
                 Identifier identifier => BuildIdentifierSource(identifier),
                 ParensExpression expression => $"({BuildExpressionSource(expression.Expression)})",
                 NewExpression newExpression => BuildNewExpressionSource(newExpression),
-                Invocation invocation => BuildInvocationSource(invocation)
+                //Invocation invocation => BuildInvocationSource(invocation) //You never can have an invocation as the start that would be something like (), 
+                //which will parse as a parents expression inside
             };
         }
 
