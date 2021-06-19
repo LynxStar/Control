@@ -39,7 +39,14 @@ namespace Shift.Services
     {
         public string CSharpNamespace { get; set; }
         public MainExpression Initializer { get; set; }
+
+        public SeedType()
+        {
+            Source = TypeSource.Seeded;
+        }
+
     }
+
 
     public class TypeService
     {
@@ -82,28 +89,23 @@ namespace Shift.Services
 
         }
 
-        public Domain.Type RetrieveExternalType(TrackedType trackedType)
+        public Domain.Type ResolveSeedType(string name)
         {
 
-            var key = trackedType.Name;
+            return SeedTypes.ContainsKey(name)
+                ? SeedTypes[name]
+                : null
+                ;
 
-            //Replace with type aliases down the road
+        }
 
-            key = key switch
-            {
-                "int" => "Int32",
-                "bool" => "Boolean",
-                _ => key
-            };
+        public Domain.Type ResolveExternalType(string name, TypeTracker tracker)
+        {
 
-            if (SeedTypes.ContainsKey(key))
-            {
-                return SeedTypes[key];
-            }
-            else if (exportedTypes.ContainsKey(key))
+            if (exportedTypes.ContainsKey(name))
             {
 
-                var found = exportedTypes[key];
+                var found = exportedTypes[name];
 
                 if (found.Count() > 1)
                 {
@@ -113,7 +115,7 @@ namespace Shift.Services
                         .Aggregate((x, y) => $"{x} and {y}")
                         ;
 
-                    throw new Exception($"Ambigiuous reference resolving [{key}] amongst {error}");
+                    throw new Exception($"Ambigiuous reference resolving [{name}] amongst {error}");
                 }
 
                 var matchedType = found.Single();

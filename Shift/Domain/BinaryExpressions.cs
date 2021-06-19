@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Shift.Intermediate;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,8 +17,6 @@ namespace Shift.Domain
     public class ConditionalOrExpression : Expression
     {
 
-        public TrackedType Output { get; set; }
-
         public ConditionalAndExpression ConditionalAndExpression { get; set; }
         public List<ConditionalAndExpression> ConditionalAndExpressions { get; set; } = new List<ConditionalAndExpression>();
     }
@@ -26,6 +25,12 @@ namespace Shift.Domain
     {
         public EqualityExpression EqualityExpression { get; set; }
         public List<EqualityExpression> EqualityExpressions { get; set; } = new List<EqualityExpression>();
+    }
+
+    public enum ConditionalOperator
+    {
+        AND,
+        OR
     }
 
     public class EqualityExpression : ExpressionBase
@@ -80,6 +85,15 @@ namespace Shift.Domain
     {        
         Multiplication,
         Division
+    }
+
+    public class Operator
+    {
+        ConditionalOperator? ConditionalOperator { get; set; }
+        EqualityOperator EqualityOperator { get; set; }
+        RelationalOperator RelationalOperator { get; set; }
+        AdditiveOperator AdditiveOperator { get; set; }
+        MultiplicativeOperator MultiplicativeOperator { get; set; }
     }
 
 }

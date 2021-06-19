@@ -99,18 +99,6 @@ namespace Shift.Services
         public string BuildAppSource(Application app)
         {
 
-            var unresolvedTypes = app
-                .Tracker
-                .ConsumedTypes
-                .Where(x => x.Key != "var")
-                .Where(x => x.Value.Source == TypeSource.Unknown)
-                ;
-
-            if(unresolvedTypes.Any())
-            {
-                throw new Exception("You failed to link everything wtf?");
-            }
-
             app
                 .Types
                 .Where(x => x.Key != "var")

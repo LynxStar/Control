@@ -1,4 +1,5 @@
-﻿using Shift.Services;
+﻿using Shift.Intermediate;
+using Shift.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,71 +9,13 @@ using System.Threading.Tasks;
 namespace Shift.Domain
 {
 
-    public class TypeTracker
-    {
-
-        public Dictionary<string, TrackedType> ConsumedTypes = new Dictionary<string, TrackedType>();
-
-        public Func<string, TrackedType> InitialResolver = x => new TrackedType { Name = x };
-        public Func<string, TrackedType> Resolver { get; set; }
-
-        public TypeTracker()
-        {
-            Resolver = InitialResolver;
-        }
-
-        public TrackedType this[string name]
-        {
-            get
-            {
-                var type = ConsumedTypes.GetValueOrDefault(name);
-
-                if (type is null)
-                {
-                    type = Resolver(name);
-                    ConsumedTypes.Add(name, type);
-                }
-
-                return type;
-
-
-            }
-        }
-
-        public TrackedType this[Type type]
-        {
-            get
-            {
-                //Blow up for now
-                return ConsumedTypes[type.Name];
-            }
-        }
-
-        public T MapTypeDef<T>(Concrete.TypeDef typeDef) where T : TypeDefinition, new()
-        {
-
-            T target = new T();
-
-            target.Type = this[typeDef.Type.IDENTIFIER];
-            target.Identifier = typeDef.Identifier;
-
-            return target;
-
-        }
-    }
 
     //Is this necessary?
     public class Application : Namespace
     {
 
-        public TypeTracker Tracker { get; set; } = new TypeTracker();
-
         public void AddType(Type type)
         {
-
-            var tracked = Tracker[type];
-            tracked.BackingType = type;
-
             Types.Add(type.Name, type);
         }
 
@@ -103,29 +46,16 @@ namespace Shift.Domain
         Seeded
     }
 
-    public class TrackedType
-    {
-
-        public string Name { get; set; }
-        public Type BackingType { get; set; }
-        public TypeSource Source { get; set; }
-
-        public override string ToString()
-        {
-            return $"{Name} from: {Source}";
-        }
-
-    }
-
     public class Type
     {
 
         public string Name { get; set; }
         public string Namespace { get; set; }
+        public TypeSource Source { get; set; } = TypeSource.Unknown;
 
         public override string ToString()
         {
-            return $"{Namespace}.{Name}";
+            return $"{Namespace}.{Name} from: {Source}";
         }
 
     }
@@ -133,6 +63,7 @@ namespace Shift.Domain
     public interface HasFields
     {
         Dictionary<string, Field> Fields { get; set; }
+        IEnumerable<OperatorMethod> OperatorMethods { get; set; }
     }
 
     public interface HasMethods
@@ -148,6 +79,8 @@ namespace Shift.Domain
     public class Data : Type, HasFields
     {
         public Dictionary<string, Field> Fields { get; set; } = new Dictionary<string, Field>();
+        public IEnumerable<OperatorMethod> OperatorMethods { get; set; } = new List<OperatorMethod>();
+
     }
 
     public class Field : TypeDefinition { }
@@ -168,6 +101,13 @@ namespace Shift.Domain
         public Dictionary<string, Field> Fields { get; set; } = new Dictionary<string, Field>();
         public Dictionary<string, List<Method>> Methods { get; set; } = new Dictionary<string, List<Method>>();
         public IEnumerable<Method> Constructors { get; set; } = new List<Method>();
+        public IEnumerable<OperatorMethod> OperatorMethods { get; set; } = new List<OperatorMethod>();
+    }
+
+    public class OperatorMethod
+    {
+        public Operator Operator { get; set; }
+        public Method Method { get; set; }
     }
 
     public class Method

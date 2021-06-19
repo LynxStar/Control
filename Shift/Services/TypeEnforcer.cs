@@ -1,4 +1,5 @@
 ﻿using Shift.Domain;
+using Shift.Intermediate;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,25 +12,25 @@ namespace Shift.Services
     public class TypeEnforcer
     {
 
-        public Application TypeCheckApplication(Application app)
+        public void TypeCheckApplication(TypeContext typeContext)
         {
 
             var scope = new LexicalScope
             {
-                Scope = app
+                Scope = typeContext
+                    .Application
                     .Types
-                    .ToDictionary(x => x.Key, x => app.Tracker[x.Value.Name])
+                    .ToDictionary(x => x.Key, x => typeContext.Tracker[x.Value.Name])
             };
 
-            app
+            typeContext
+                .Application
                 .Types
                 .Select(x => x.Value)
                 .ToList()
                 .ForEach(x => ProcessType(x, scope))
                 ;
-
-            return app;
-        
+                    
         }
 
         public void ProcessType(Domain.Type type, LexicalScope scope)
@@ -100,7 +101,7 @@ namespace Shift.Services
         public class LexicalScope
         {
 
-            public Application Application { get; set; }
+            public TypeContext Application { get; set; }
             public LexicalScope Parent { get; set; }
 
 
