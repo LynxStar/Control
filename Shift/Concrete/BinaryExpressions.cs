@@ -82,4 +82,8 @@ namespace Shift.Concrete
 
     public class MultiplicativeOperator : TokenValue { }
 
+    public class ConditionalOperator : TokenValue { }
+
+    public class Operator : Option<ConditionalOperator, EqualityOperator, RelationalOperator, AdditiveOperator, MultiplicativeOperator> { }
+
 }

@@ -1,4 +1,5 @@
 ﻿using Control.Services;
+using Shift.Intermediate;
 using Shift.Services;
 using System;
 using System.IO;
@@ -26,19 +27,17 @@ namespace Shift
 
             var sourceTree = grammarService.ConvertTo<Concrete.Source>(grammar, source, EntryFormKey);
 
-            var appService = new ApplicationService();
+            var typeContext = new TypeContext();
 
-            var app = appService.MapSourceToApplication(sourceTree);//Stage 1, Build Schema
+            var concreteMapper = new ConcreteMapper();
 
-            var typeService = new TypeService();
-
-            app = appService.LinkSchemaTrackedTypes(app, typeService);//Stage 2, Link high level schema objects
+            concreteMapper.MapSourceToApplication(sourceTree, typeContext);
 
             var enforced = new TypeEnforcer();
 
             var compilerService = new CompilerService();
 
-            compilerService.Compile(app);
+            compilerService.Compile(typeContext.Application);
 
         }
     

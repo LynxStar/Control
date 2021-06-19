@@ -81,7 +81,8 @@ form aspect
 
 		public static string service_member => @"
 form service_member
-	: method
+	: operator_method
+	| method
 	| field
 	| constructor
 	;
@@ -89,8 +90,10 @@ form service_member
 ";
 
 		public static string method_forms => @"
-form method : signature block;
 
+form operator_method : operator method;
+
+form method : signature block;
 form constructor : THIS OPENPARENS (parameters)? CLOSEPARENS block;
 
 form signature : typeDef OPENPARENS (parameters)? CLOSEPARENS;
@@ -173,6 +176,19 @@ form multiplicative_expression : unary_expression (multiplicative_operator unary
 form multiplicative_operator
 	: STAR
 	| FORWARDSLASH
+	;
+
+form conditional_operator
+	: OR
+	| AND
+	;
+
+form operator
+	: conditional_operator
+	| equality_operator
+	| relational_operator
+	| additive_operator
+	| multiplicative_expression
 	;
 
 form unary_expression

@@ -63,13 +63,19 @@ namespace Shift.Concrete
         public List<ServiceMember> ServiceMembers { get; set; }
     }
 
-    public class ServiceMember: Option<Method, Field, Constructor> { }
+    public class ServiceMember: Option<OperatorMethod, Method, Field, Constructor> { }
 
     public class Constructor
     {
         [Direct]
         public Parameters Parameters { get; set; }
         public Block Block { get; set; }
+    }
+
+    public class OperatorMethod
+    {
+        public Operator Operator { get; set; }
+        public Method Method { get; set; }
     }
 
     public class Method
