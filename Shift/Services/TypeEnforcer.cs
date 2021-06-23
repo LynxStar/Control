@@ -17,6 +17,7 @@ namespace Shift.Services
 
             var scope = new LexicalScope
             {
+                TypeContext = typeContext,
                 Scope = typeContext
                     .Application
                     .Types
@@ -101,7 +102,7 @@ namespace Shift.Services
         public class LexicalScope
         {
 
-            public TypeContext Application { get; set; }
+            public TypeContext TypeContext { get; set; }
             public LexicalScope Parent { get; set; }
 
 
@@ -135,7 +136,7 @@ namespace Shift.Services
             {
                 return new LexicalScope
                 {
-                    Application = Application,
+                    TypeContext = TypeContext,
                     Parent = this,
                     ReturnType = ReturnType
                 };
@@ -182,7 +183,7 @@ namespace Shift.Services
 
             var conditionType = ProcessExpression(control.Condition, scope);
 
-            if(conditionType != scope.Application.Tracker["Boolean"])
+            if(conditionType != scope.TypeContext.Tracker["Boolean"])
             {
                 throw new Exception("condition must be boolean");
             }
@@ -452,9 +453,9 @@ namespace Shift.Services
 
             return literal switch
             {
-                Literal<int> => scope.Application.Tracker["Int32"],
-                Literal<bool> => scope.Application.Tracker["Boolean"],
-                Literal<string> => scope.Application.Tracker["string"]
+                Literal<int> => scope.TypeContext.Tracker["Int32"],
+                Literal<bool> => scope.TypeContext.Tracker["Boolean"],
+                Literal<string> => scope.TypeContext.Tracker["string"]
             };
         }
 
@@ -468,7 +469,7 @@ namespace Shift.Services
         public TrackedType ProcessNewExpressionType(NewExpression newExpression, LexicalScope scope)
         {
 
-            var newType = scope.Application.Tracker[newExpression.Identifier.Path];
+            var newType = scope.TypeContext.Tracker[newExpression.Identifier.Path];
 
             //Match the parameters and make sure they are valid
 

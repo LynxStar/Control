@@ -33,7 +33,9 @@ namespace Shift
 
             concreteMapper.MapSourceToApplication(sourceTree, typeContext);
 
-            var enforced = new TypeEnforcer();
+            var enforcer = new TypeEnforcer();
+
+            enforcer.TypeCheckApplication(typeContext);
 
             var compilerService = new CompilerService();
 
