@@ -1,53 +1,125 @@
 ﻿using Control.Grammar;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Control.Services
 {
     
+    public class ParseContext
+    {
+        public LinkedListNode<Token> Token { get; set; }
+    }
+
     public class ParserService
     {
 
-        private readonly RulesService rulesService = new RulesService();
-        private readonly FragmentService _fragmentService = new FragmentService();
-        private readonly LexerService _lexer = new LexerService();
+        private int CaptureGroupRuleCount = 0;
 
-        public ParseContext BuildParseContext(string grammar)
+        public SyntaxNode ParseTokenStream(LinkedList<Token> tokens, Rule entryRule)
         {
 
-            var rules = rulesService.BuildGrammarRules(grammar);
-
-            var tokenRules = _fragmentService.BuildTokenRegex(rules);
-
-            var sourceRules = rules
-                .Where(x => x.RuleType == RuleType.Rule || x.RuleType == RuleType.Token)
-                .ToDictionary(x => x.Name)
-                ;
-
-            return new ParseContext 
+            var context = new ParseContext
             {
-                SourceRules = sourceRules,
-                TokenRules = tokenRules
+                Token = tokens.First
             };
+
+            var node = ParseRule(entryRule, context);
+
+            if(context.Token is not null)
+            {
+                throw new Exception("Apparently you didn't parse everything, wtf mate?");
+            }
+
+            DumpAST(node);
+
+            return node;
 
         }
 
-        public List<RuleNode> Parse(string source, GrammarRule sourceRule, ParseContext context)
+        public void DumpAST(SyntaxNode node)
         {
 
-            var tokenStream = _lexer.Tokenize(source, context.TokenRules);
+            var builder = new StringBuilder();
 
-            var nodes = new List<RuleNode>();
+            DumpNode(node, builder, "");
 
-            context.CurrentNode = tokenStream.First;
+            if (File.Exists("./ASTDump.txt"))
+            {
+                File.Delete("./ASTDump.txt");
+            }
 
-            while(context.CurrentNode != null)
+            File.WriteAllText("./ASTDump.txt", builder.ToString());
+
+        }
+
+        public void DumpNode(SyntaxNode node, StringBuilder builder, string tabDepth)
+        {
+
+            var type = node.Rule.RuleType == RuleType.Form
+                ? "Form"
+                : "Token"
+                ;
+
+            builder.AppendLine($"{tabDepth}{type} - {node.Rule.Name}: {node.Capture}");
+
+            foreach(var inner in node.SyntaxNodes)
+            {
+                DumpNode(inner, builder, $"{tabDepth}\t");
+            }
+
+        }
+
+        public SyntaxNode ParseRule(Rule rule, ParseContext context)
+        {
+
+            var node = new SyntaxNode
+            {
+                Rule = rule,
+            };
+
+            foreach(var option in rule.Options)
             {
 
-                var node = ParseRuleNode(sourceRule, context);
+                var currentToken = context.Token;
+                var optionNodes = TryOption(option, context);
+
+                if(optionNodes is not null)
+                {
+                    node.SyntaxNodes = optionNodes;
+                    node.SelectedOption = option;
+                    break;
+                }
+
+                context.Token = currentToken;
+
+            }
+
+            if(!node.SyntaxNodes.Any())
+            {
+                return null;
+            }
+
+            return node;
+        }
+
+        public List<SyntaxNode> TryOption(RuleOption option, ParseContext context)
+        {
+
+            var nodes = new List<SyntaxNode>();
+
+            foreach(var clause in option.Clauses)
+            {
+                var node = MatchClause(clause, context);
+
+                if(node is null)
+                {
+                    return null;
+                }
+
                 nodes.Add(node);
 
             }
@@ -56,81 +128,148 @@ namespace Control.Services
 
         }
 
-        public RuleNode ParseRuleNode(GrammarRule rule, ParseContext context)
+        public SyntaxNode MatchClause(Clause clause, ParseContext context)
         {
 
-            foreach(var alternative in rule.Alternatives)
+            if (clause.ClauseType == ClauseType.Reference)
             {
-
-                var alternativeNode = ParseAlternativeNode(alternative, context);
-
-                if(alternativeNode != null)
-                {
-
-                    var node = new RuleNode
-                    {
-                        Rule = rule
-                    };
-
-                }
-
+                return MatchReference(clause.Reference, context);
+            }
+            else if (clause.ClauseType == ClauseType.CaptureGroup)
+            {
+                return MatchCaptureGroup(clause, context);
 
             }
-
-            return null;
+            else
+            {
+                throw new Exception("wtf happened that caused this?");
+            }
 
         }
 
-        public RuleNode ParseAlternativeNode(Alternative alternative, ParseContext context)
+        private SyntaxNode MatchCaptureGroup(Clause clause, ParseContext context)
         {
 
-            foreach(var ruleClause in alternative.RuleClauses)
+            var required = clause.CaptureGroup.Modifier is CaptureModifier.None or CaptureModifier.OneOrMore;
+            var allowMultiple = clause.CaptureGroup.Modifier is CaptureModifier.OneOrMore or CaptureModifier.Optional;
+
+            List<List<SyntaxNode>> matches = new List<List<SyntaxNode>>();
+
+            while (true)
             {
 
-                var clauseNode = ParseClauseNode(ruleClause, context);
+                var startingToken = context.Token;
+
+                var optionNodes = TryOption(clause.CaptureGroup, context);
+
+                if (optionNodes is null)
+                {
+                    context.Token = startingToken;
+                    break;
+                }
+
+                matches.Add(optionNodes);
+
+                if (!allowMultiple)
+                {
+                    break;
+                }
 
             }
 
-            return null;
-
-        }
-
-        public RuleNode ParseClauseNode(RuleClause ruleClause, ParseContext context)
-        {
-
-            var clauseName = ruleClause.Clause;
-
-            var sourceRule = context.SourceRules[clauseName];
-
-            if (sourceRule.RuleType == RuleType.Token)
+            if (required && !matches.Any())
             {
-
-                if (context.CurrentNode.Value.Name == clauseName)
-                {
-
-                    var capturedNode = new RuleNode
-                    {
-                        Rule = sourceRule,
-                        Token = context.CurrentNode.Value
-                    };
-
-                    context.CurrentNode = context.CurrentNode.Next;
-
-                    return capturedNode;
-
-                }
-
                 return null;
-
             }
-            else if (sourceRule.RuleType == RuleType.Rule)
+
+            var cgr = new Rule
+            {
+                RuleType = RuleType.Form,
+                Name = $"CGR ({clause.CaptureGroup.Modifier}) - {CaptureGroupRuleCount++}",
+                Options = new List<RuleOption> { clause.CaptureGroup }
+            };
+
+            var node = new SyntaxNode
+            {
+                Rule = cgr,
+                SelectedOption = clause.CaptureGroup
+            };
+
+            if (allowMultiple)
             {
 
+                var innerMatch = 1;
+
+                foreach (var match in matches)
+                {
+                    var innerCgr = new Rule
+                    {
+                        RuleType = RuleType.Form,
+                        Name = $"CGR ({clause.CaptureGroup.Modifier}) - {CaptureGroupRuleCount} : Capture {innerMatch++}",
+                        Options = new List<RuleOption> { clause.CaptureGroup }
+                    };
+
+                    var innerNode = new SyntaxNode
+                    { 
+                        Rule = innerCgr,
+                        SyntaxNodes = match,
+                        SelectedOption = clause.CaptureGroup
+                    };
+
+                    node.SyntaxNodes.Add(innerNode);
+
+                }
+            }
+            else
+            {
+                node.SyntaxNodes = matches.FirstOrDefault() ?? Enumerable.Empty<SyntaxNode>().ToList();
             }
 
-            return null;
+            return node;
+        }
+
+        public SyntaxNode MatchReference(Rule reference, ParseContext context)
+        {
+
+            if(reference.RuleType == RuleType.Form)
+            {
+                return ParseRule(reference, context);
+            }
+            else if(reference.RuleType == RuleType.Token)
+            {
+
+                if(context.Token is null)
+                {
+                    return null;
+                }
+
+                var token = context.Token.Value;
+
+                if (token.Rule.Name == reference.Name)
+                {
+                    var node = new SyntaxNode
+                    {
+                        Rule = reference,
+                        Capture = token.Capture
+                    };
+
+                    context.Token = context.Token.Next;
+
+                    return node;
+
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                throw new Exception("How did you reference this?");
+            }
 
         }
 
     }
+
 }

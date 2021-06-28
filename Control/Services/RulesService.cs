@@ -1,46 +1,60 @@
 ﻿using Control.Grammar;
+using Control.Streams;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Control.Services
 {
 
-    public class RulesStream
-    {
-
-        public string Source { get; set; }
-        public int Index { get; set; }
-
-
-    }
-    
     public class RulesService
     {
 
         List<char> Whitespace = new List<char> { ' ', '\r', '\n', '\t' };
-        List<char> ClauseQualifiers = new List<char> { '*', '+', '?' };
+        List<char> Terminator = new List<char> { ')', ';', '|' };
 
-        public List<GrammarRule> BuildGrammarRules(string grammarText)
+        private readonly ReferenceLinkerService referenceLinkerService = new ReferenceLinkerService();
+
+        public Dictionary<string, Rule> BuildRules(string grammarText)
         {
 
-            var grammarRules = new List<GrammarRule>();
+            var rules = new Dictionary<string, Rule>();
 
-            var rulesStream = new RulesStream { Source = grammarText };
+            var stream = new RulesStream { Source = grammarText };
 
-            while(rulesStream.Index < rulesStream.Source.Length)
+            //Lex and parse rules
+            while (stream.Index < stream.Source.Length)
             {
 
-                var grammarRule = new GrammarRule();
-                
-                grammarRule.RuleType = CaptureCommandType(rulesStream);
-                grammarRule.Name = CaptureCommandName(rulesStream);
-                grammarRule.Alternatives = CaptureAlternatives(rulesStream);
+                Trim(stream);
 
-                grammarRules.Add(grammarRule);
+                var rule = CaptureRule(stream);
+                rules.Add(rule.Name, rule);
+
+                Trim(stream);
+
             }
 
-            return grammarRules;
+            rules = referenceLinkerService.LinkRules(rules);
+
+            return rules;
+
+        }
+
+        public Rule CaptureRule(RulesStream stream)
+        {
+
+            var rule = new Rule();
+
+            rule.RuleType = CaptureCommandType(stream);
+            stream.Index++;
+            rule.Name = CaptureCommandName(stream);
+            stream.Index++;
+            FindAndSkipPast(':', stream);
+            rule.Options = CaptureOptions(stream);
+
+            return rule;
 
         }
 
@@ -64,10 +78,8 @@ namespace Control.Services
 
         }
 
-        public RuleType CaptureCommandType(RulesStream stream)
+        public string CaptureWord(RulesStream stream)
         {
-
-            Trim(stream);
 
             var start = stream.Index;
             var length = 0;
@@ -77,7 +89,7 @@ namespace Control.Services
 
                 var nextCharacter = stream.Source[stream.Index];
 
-                if (Whitespace.Contains(nextCharacter))
+                if (Whitespace.Contains(nextCharacter) || Terminator.Contains(nextCharacter))
                 {
                     break;
                 }
@@ -87,14 +99,23 @@ namespace Control.Services
 
             }
 
-            var typeString = stream.Source.Substring(start, length);
+            var capture = stream.Source.Substring(start, length);
 
-            return typeString switch 
-            { 
-                "rule" => RuleType.Rule,
+            return capture;
+
+        }
+
+        public RuleType CaptureCommandType(RulesStream stream)
+        {
+
+            var typeString = CaptureWord(stream);
+
+            return typeString switch
+            {
+                "form" => RuleType.Form,
                 "token" => RuleType.Token,
                 "fragment" => RuleType.Fragment,
-                "noop" => RuleType.Noop,
+                "discard" => RuleType.Discard,
                 _ => throw new Exception($"Unknown rule {typeString}")
             };
 
@@ -103,55 +124,45 @@ namespace Control.Services
         public string CaptureCommandName(RulesStream stream)
         {
 
-            Trim(stream);
+            var name = CaptureWord(stream);
 
-            var start = stream.Index;
-            var length = 0;
-
-            while (stream.Index < stream.Source.Length)
+            if (String.IsNullOrWhiteSpace(name))
             {
-
-                var nextCharacter = stream.Source[stream.Index];
-
-                if (Whitespace.Contains(nextCharacter))
-                {
-                    break;
-                }
-
-                stream.Index++;
-                length++;
-
+                throw new Exception("This is empty, you're retarded");
             }
-
-            var name = stream.Source.Substring(start, length);
 
             return name;
 
         }
 
-        public List<Alternative> CaptureAlternatives(RulesStream stream)
+        public void FindAndSkipPast(char needle, RulesStream stream)
         {
-
-            var alternatives = new List<Alternative>();
 
             Trim(stream);
 
             var nextCharacter = stream.Source[stream.Index];
 
-            if(nextCharacter != ':')
+            if (nextCharacter != needle)
             {
                 throw new Exception("Wtf is this?");
             }
 
             stream.Index++;
 
-            while (stream.Index < stream.Source.Length)
+        }
+
+        public List<RuleOption> CaptureOptions(RulesStream stream)
+        {
+
+            var definitions = new List<RuleOption>();
+
+            while (true)
             {
 
-                var alternative = CaptureAlternative(stream);
-                alternatives.Add(alternative);
+                var definition = CaptureOption(stream, ';');
+                definitions.Add(definition);
 
-                nextCharacter = stream.Source[stream.Index];
+                var nextCharacter = stream.Source[stream.Index];
                 stream.Index++;
 
                 if (nextCharacter == '|')
@@ -166,153 +177,136 @@ namespace Control.Services
 
             }
 
-            return alternatives;
+            return definitions;
 
         }
 
-        public Alternative CaptureAlternative(RulesStream stream)
+        public RuleOption CaptureOption(RulesStream stream, char terminator)
         {
 
-            var alternative = new Alternative();
+            var definition = new RuleOption();
 
             Trim(stream);
 
-            while(stream.Index < stream.Source.Length)
+            while (true)
             {
 
-                var clause = CaptureRuleClause(stream);
+                var clause = CaptureClause(stream);
 
-                alternative.RuleClauses.Add(clause);
+                definition.Clauses.Add(clause);
 
                 Trim(stream);
 
                 var nextCharacter = stream.Source[stream.Index];
 
-                if (nextCharacter == '|' || nextCharacter == ';')
+                if (nextCharacter == '|' || nextCharacter == terminator)
                 {
                     break;
                 }
 
             }
 
-            return alternative;
+            return definition;
 
         }
 
-        public RuleClause CaptureRuleClause(RulesStream stream)
+        public Clause CaptureClause(RulesStream stream)
         {
 
-            var clause = new RuleClause();
+            var clause = new Clause();
 
             Trim(stream);
 
-            var left = CaptureClauseSide(stream);
-
-            clause.Clause = left.Clause;
-            clause.Qualifier = left.Qualifier;
-            clause.IsLiteral = left.IsLiteral;
-            clause.IsRegex = left.IsRegex;
-
             var nextCharacter = stream.Source[stream.Index];
+            stream.Index++;
 
-            if (nextCharacter == '&')
+            //Parens Stack
+            if (nextCharacter == '(')
             {
-                stream.Index++;
-                var right = CaptureClauseSide(stream);
 
-                clause.DelimiterInUse = true;
-                clause.QualifierArgument = right.Clause;
-                clause.RightQualifier = right.RightQualifier;
+                var option = CaptureOption(stream, ')'); 
+                stream.Index++;
+
+                clause.ClauseType = ClauseType.CaptureGroup;
+                clause.CaptureGroup = new CaptureGroup
+                {
+                    Clauses = option.Clauses
+                };
+
+                nextCharacter = stream.Source[stream.Index];
+
+                clause.CaptureGroup.Modifier = nextCharacter switch
+                {
+                    '*' => CaptureModifier.Optional,
+                    '?' => CaptureModifier.NoneToOne,
+                    '+' => CaptureModifier.OneOrMore,
+                    _ => CaptureModifier.None
+                };
+
+                if (clause.CaptureGroup.Modifier != CaptureModifier.None)
+                {
+                    stream.Index++;
+                }
+            }
+
+            //Literal
+            else if (nextCharacter == '\'')
+            {
+                clause.Value = CaptureUntil(stream, '\'');
+                clause.ClauseType = ClauseType.Literal;
+            }
+
+            //Regex
+            else if (nextCharacter == '`')
+            {
+                clause.Value = CaptureUntil(stream, '`');
+                clause.ClauseType = ClauseType.Regex;
+            }
+            else
+            {
+                stream.Index--;//The others assume the deliminating character was consumed, in this case we want to walk back
+                clause.Value = CaptureWord(stream);
+                clause.ClauseType = ClauseType.Reference;
+            }
+
+            if(!String.IsNullOrWhiteSpace(clause.Value))
+            {
+                clause.Value = clause.Value.Replace("\\\\", "\\");
             }
 
             return clause;
 
         }
 
-        public RuleClause CaptureClauseSide(RulesStream stream)
+        public string CaptureUntil(RulesStream stream, char terminator)
         {
-            var clause = new RuleClause();
 
             var start = stream.Index;
             var length = 0;
-
 
             while (stream.Index < stream.Source.Length)
             {
 
                 var nextCharacter = stream.Source[stream.Index];
 
-                if (nextCharacter == '|' || nextCharacter == ';')
-                {
-                    break;
-                }
 
-                if (nextCharacter == '\'')
+                //Handle escape characters
+                if (nextCharacter == '\\')
                 {
 
-                    stream.Index++;
-                    clause.IsLiteral = true;
-                    clause.Clause = CaptureStringLiteral(stream, '\'');
-                    return clause;
+                    char escapedChar = stream.Source[stream.Index + 1];
 
-                }
-
-                if (nextCharacter == '`')
-                {
-                    stream.Index++;
-                    clause.IsRegex = true;
-                    clause.Clause = CaptureStringLiteral(stream, '`');
-                    return clause;
-                }
-
-                if (Whitespace.Contains(nextCharacter))
-                {
-                    clause.Qualifier = ClauseQualifier.None;
-                    break;
-                }
-
-                if (ClauseQualifiers.Contains(nextCharacter))
-                {
-
-                    clause.Qualifier = nextCharacter switch
+                    if(escapedChar == '\\' || escapedChar == terminator)
                     {
-                        '*' => ClauseQualifier.Optional,
-                        '?' => ClauseQualifier.NoneToOne,
-                        '+' => ClauseQualifier.OneOrMore,
-                        _ => throw new Exception("What is this symbol?")
-                    };
+                        stream.Index += 2;
+                        length += 2;
+                        continue;
+                    }
 
-                    stream.Index++;
-
-                    break;
                 }
 
-                stream.Index++;
-                length++;
-
-            }
-
-            var clauseText = stream.Source.Substring(start, length);
-
-            clause.Clause = clauseText;
-
-            return clause;
-        }
-
-        public string CaptureStringLiteral(RulesStream stream, char delimiter)
-        {
-
-            var start = stream.Index;
-            var length = 0;
-
-            while (stream.Index < stream.Source.Length)
-            {
-
-                var nextCharacter = stream.Source[stream.Index];
-
-                if (nextCharacter == delimiter)
+                if (nextCharacter == terminator)
                 {
-                    stream.Index++;
                     break;
                 }
 
@@ -321,11 +315,13 @@ namespace Control.Services
 
             }
 
-            var literalText = stream.Source.Substring(start, length);
+            var capture = stream.Source.Substring(start, length);
+            stream.Index++;
 
-            return literalText;
+            return capture;
 
         }
+
 
     }
 

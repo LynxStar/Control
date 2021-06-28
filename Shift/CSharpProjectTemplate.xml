@@ -6,9 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="Shift.ctrl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <Reference Include="Shift.Language">
+      <HintPath>..\Shift.Language.dll</HintPath>
+    </Reference>
   </ItemGroup>
-
+  
 </Project>

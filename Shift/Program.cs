@@ -1,4 +1,5 @@
 ﻿using Control.Services;
+using Shift.Services;
 using System;
 using System.IO;
 using System.Linq;
@@ -10,22 +11,32 @@ namespace Shift
     public class Program
     {
 
+        private static readonly String EntryFormKey = "source";
+
         static async Task Main(string[] args)
         {
 
-            var grammar = await File.ReadAllTextAsync("./Shift.ctrl");
-            
-            var parserService = new ParserService();
-            var context = parserService.BuildParseContext(grammar);
+            var grammarService = new GrammarService();
 
-            var exampleProgram = await File.ReadAllTextAsync("./Example.st");
+            var grammar = ShiftGrammar.FullGrammar;
 
-            var sourceNode = context
-                .SourceRules
-                .Single(x => x.Name == "source")
-                ;
+            File.WriteAllText("./fullGrammar.txt", ShiftGrammar.FullGrammar);
 
-            var parseTree = parserService.Parse(exampleProgram, sourceNode, context);
+            var source = await File.ReadAllTextAsync("./structureTest.st");
+
+            var sourceTree = grammarService.ConvertTo<Concrete.Source>(grammar, source, EntryFormKey);
+
+            var appService = new ApplicationService();
+
+            var app = appService.MapSourceToApplication(sourceTree);
+
+            var typeService = new TypeService();
+
+            app = appService.LinkSchemaTrackedTypes(app, typeService);
+
+            var compilerService = new CompilerService();
+
+            compilerService.Compile(app);
 
         }
     

@@ -8,6 +8,8 @@ rule structure : STRUCTURE identifier OPENSBRACKET field* CLOSESBRACKET;
 
 rule library : LIBRARY identifier OPENSBRACKET method* CLOSESBRACKET;
 
+rule service : SERVICE identifier OPENSBRACKET method* CLOSESBRACKET;
+
 rule method : methodSignature block;
 
 rule methodSignature : type identifier parameters;

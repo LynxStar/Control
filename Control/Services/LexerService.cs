@@ -1,27 +1,32 @@
 ﻿using Control.Grammar;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Control;
 using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Control.Services
 {
-    
 
     public class LexerService
     {
 
-        public LinkedList<Token> Tokenize(string source, IEnumerable<TokenRegex> tokenRules)
+        public LinkedList<Token> Tokenize(string source, Dictionary<string, Rule> rules, bool dumpStream)
         {
 
             var tokenStream = new LinkedList<Token>();
 
-            tokenStream.AddLast(new Token { Name = "@@@RAWSOURCE@@@", Capture = source, IsRaw = true, IsNoop = false });
-                       
-            var lastDisplay = DateTime.UtcNow;
+            tokenStream.AddLast(new Token { Capture = source });
 
-            foreach (var tokenRule in tokenRules)
+            var tokenizableRules = rules
+                .Where(x => x.Value.RuleType != RuleType.Form)
+                .Select(x => x.Value)
+                .ToList()
+                ;
+
+            foreach (var rule in tokenizableRules)
             {
 
                 var tokenNode = tokenStream.First;
@@ -29,34 +34,32 @@ namespace Control.Services
                 while (tokenNode != null)
                 {
 
-                    if (DateTime.UtcNow - lastDisplay > TimeSpan.FromMilliseconds(250))
-                    {
-                        lastDisplay = DateTime.UtcNow;
-                        Visualize(tokenStream, tokenNode, tokenRule);
-
-                    }
-
                     var token = tokenNode.Value;
 
-                    if (!token.IsRaw)
+                    //If already tokenized skip forward
+                    if (token.Rule is not null)
                     {
                         tokenNode = Next(tokenNode);
                         continue;
                     }
 
-                    var match = tokenRule.Regex.Match(token.Capture);
+                    var regex = new Regex(rule.Regex);
 
-                    if(!match.Success)
+                    var match = regex.Match(token.Capture);
+
+                    //Raw text isn't this token
+                    if (!match.Success)
                     {
                         tokenNode = Next(tokenNode);
                         continue;
                     }
 
+                    //It's a match, eat this from the raw source
                     if (match.Index > 0)
                     {
                         var before = token.Capture.Substring(0, match.Index);
 
-                        tokenStream.AddBefore(tokenNode, new Token { Name = "@@@RAWSOURCE@@@", Capture = before, IsRaw = true, IsNoop = false });
+                        tokenStream.AddBefore(tokenNode, new Token { Capture = before });
 
                     }
 
@@ -64,10 +67,8 @@ namespace Control.Services
 
                     var captureToken = new Token
                     {
-                        Name = tokenRule.Name,
+                        Rule = rule,
                         Capture = capture,
-                        IsRaw = false,
-                        IsNoop = tokenRule.IsNoop
                     };
 
                     var captureNode = tokenStream.AddAfter(tokenNode, captureToken);
@@ -76,11 +77,11 @@ namespace Control.Services
                     var afterStart = match.Index + match.Length;
                     var endLength = token.Capture.Length - afterStart;
 
-                    if(endLength > 0)
+                    if (endLength > 0)
                     {
 
                         var after = token.Capture.Substring(afterStart, endLength);
-                        tokenStream.AddAfter(captureNode, new Token { Name = "@@@RAWSOURCE@@@", Capture = after, IsRaw = true, IsNoop = false });
+                        tokenStream.AddAfter(captureNode, new Token { Capture = after });
 
                     }
 
@@ -90,41 +91,22 @@ namespace Control.Services
 
             }
 
-            DumpStream(tokenStream);
-
-            return tokenStream;
-
-        }
-
-        public void Visualize(LinkedList<Token> stream, LinkedListNode<Token> current, TokenRegex tokenRegex)
-        {
-
-            Console.Clear();
-
-            Console.WriteLine($"Looking for: {tokenRegex.Name} with `{tokenRegex.Regex}`");
-            Console.WriteLine();
-            Console.WriteLine("----------------------------------------------------------------------");
-            Console.WriteLine();
-
-            var printNow = current.PreviousBy(5);
-
-            for(var i = 0; i < 10; i++)
+            if(dumpStream)
             {
-                var hereMarker = printNow == current
-                    ? "===> "
-                    : "     "
-                    ;
-
-                Console.WriteLine($"{hereMarker}{printNow.Value.Name.PadRight(30)}||{printNow.Value.Capture.Preview(30)}");
-
-                printNow = printNow.Next;
-
-                if(printNow == null)
-                {
-                    break;
-                }
-
+                DumpStream(tokenStream);
             }
+
+            var postDiscardStream = new LinkedList<Token>();
+
+            foreach(var token in tokenStream)
+            {
+                if(token.Rule.RuleType != RuleType.Discard)
+                {
+                    postDiscardStream.AddLast(token);
+                }
+            }
+
+            return postDiscardStream;
 
         }
 
@@ -134,28 +116,39 @@ namespace Control.Services
             var formattedBuilder = new StringBuilder();
             var rawBuilder = new StringBuilder();
 
+            if(stream.Any(x => x.Rule is null))
+            {
+                //throw new Exception("wtf bill?");
+            }
+
             foreach (var node in stream)
             {
 
-                if(node.Name == "WHITESPACE")
+                if (node?.Rule?.RuleType == RuleType.Discard)
                 {
                     formattedBuilder.Append(node.Capture);
                 }
                 else
                 {
-                    formattedBuilder.Append($"{{{node.Name}}}");
-                    rawBuilder.AppendLine($"{{{node.Name}}}");
+
+                    var name = node?.Rule?.Name is not null
+                        ? node.Rule.Name
+                        : $"UNLINKED:[{node.Capture}]"
+                        ;
+
+                    formattedBuilder.Append($"{{{name}}}");
+                    rawBuilder.AppendLine($"{{{name}}}");
                 }
 
             }
 
-            if(File.Exists("./streamDump.txt"))
+            if (File.Exists("./streamDump.txt"))
             {
                 File.Delete("./streamDump.txt");
             }
 
-            File.WriteAllText("./streamDump.txt", formattedBuilder.ToString()); 
-            
+            File.WriteAllText("./streamDump.txt", formattedBuilder.ToString());
+
             if (File.Exists("./rawDump.txt"))
             {
                 File.Delete("./rawDump.txt");
@@ -168,17 +161,17 @@ namespace Control.Services
         public LinkedListNode<Token> Next(LinkedListNode<Token> node)
         {
 
-            while(true)
+            while (true)
             {
 
                 node = node.Next;
 
-                if(node == null)
+                if (node == null)
                 {
                     return node;
                 }
 
-                if (node.Value.IsRaw)
+                if (node.Value.Rule is null)
                 {
                     return node;
                 }

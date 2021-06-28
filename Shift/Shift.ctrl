@@ -1,88 +1,100 @@
-﻿rule source
-	: structure
+﻿form source
+	: data
 	| library
-	| service
 	;
 
-rule structure : STRUCTURE identifier OPENSBRACKET field* CLOSESBRACKET;
+form data : DATA identifier OPENSBRACKET (field)* CLOSESBRACKET;
 
-rule library : LIBRARY identifier OPENSBRACKET method* CLOSESBRACKET;
+form library : LIBRARY identifier OPENSBRACKET (method)* CLOSESBRACKET;
 
-rule method : methodSignature block;
+form method : signature block;
 
-rule methodSignature : type identifier parameters;
+form signature : typeDef OPENPARENS (parameters)? CLOESPARENS;
 
-rule parameters : OPENPARENS parameter*&COMMA CLOESPARENS;
+form parameters : parameter (COMMA parameter)*;
 
-rule parameter : type identifier;
+form parameter : typeDef;
 
-rule block : OPENSBRACKET statement* CLOSESBRACKET;
+form block : OPENSBRACKET (statement SEMICOLON)* CLOSESBRACKET;
 
-rule statement : command SEMICOLON;
-
-rule command
-	: typeDef
+form statement 
+	: declaration		
 	| assignment
-	| expression
-	| return
+	| return_expression
+	| call
 	;
 
-rule return : RETURN expression;
+form declaration : type identifier (initializer)?;
 
-rule expression
-	: parensExpression
-	| binaryExpression
-	| value
+form initializer : ASSIGNMENT expression;
+
+form return_expression : RETURN expression;
+
+form expression 
+	: unary_expression
 	;
 
-rule assignment : assignable ASSIGNMENT expression;
 
-rule assignable 
-	: reference
-	| typeDef
+form assignment
+	: accessor ASSIGNMENT expression
 	;
 
-rule reference 
-	: identifier
+form accessor : identifier (DOT identifier)*;
+
+form unary_expression
+	: primary_expression
 	;
 
-rule value
-	: reference
-	| constant
+form primary_expression
+	: parens_expression
+	| literal
+	| chain
 	;
 
-rule parensExpression : OPENPARENS expression CLOESPARENS;
+form parens_expression : OPENPARENS (expression)? CLOESPARENS;
 
-rule binaryExpression : expression binaryOperator expression;
+form call : expression invocation;
 
-rule binaryOperator 
-	: EQUALITY
-	| INEQUALITY
-	| GREATERTHAN
-	| LESSTHAN
-	| GREATERTHANOREQUALTO
-	| LESSTHANOREQUALTO
-	| AND
-	| OR
-	| NOT
+form chain : chain_part (DOT chain_part)*;
+
+form chain_part
+	: invocation
+	| identifier
+	| literal
 	;
 
-rule field : typeDef SEMICOLON;
+form invocation : OPENPARENS (arguments)? CLOESPARENS;
 
-rule typeDef : type identifier;
+form arguments : argument (COMMA argument)*;
 
-rule type : IDENTIFIER;
-rule identifier : IDENTIFIER;
+form argument : expression;
+	
+form literal
+	: boolean
+	| string
+	| INTEGER
+	;
+	
+form boolean
+	: TRUE
+	| FALSE
+	;
 
-rule constant
-    : STRING
-    | NUMBER
-    ;
+form string : STRING;
 
-token STRUCTURE : 'structure';
-token LIBRARY : 'library';
-token SERVICE : 'service';
-token EFFECT : 'effect';
+form field : typeDef SEMICOLON;
+
+form typeDef : type identifier;
+
+form type : IDENTIFIER;
+form identifier : IDENTIFIER;
+
+discard COMMENT : `\/\/.*?((?=\n)|(?=\r\n))`;
+
+token STRING : `(["'])(?:(?=(\\?))\2.)*?\1`;
+
+token DATA : 'data' WHITESPACE;
+token LIBRARY : 'library' WHITESPACE;
 
 token RETURN : 'return';
 
@@ -91,36 +103,18 @@ token CLOSESBRACKET : '}';
 token OPENPARENS : '(';
 token CLOESPARENS : ')';
 
+token DOT : '.';
 token SEMICOLON : ';';
 token COMMA : ',';
 
 token ASSIGNMENT : '=';
 
-token EQUALITY : '==';
-token INEQUALITY : '!=';
-token GREATERTHAN : '>';
-token LESSTHAN : '<';
-token GREATERTHANOREQUALTO : '>=';
-token LESSTHANOREQUALTO : '<=';
-token AND : '&&';
-token OR : '||';
-token NOT : '!';
+token TRUE : 'true';
+token FALSE : 'false';
 
-token SUCHTHAT : '=>';
+token IDENTIFIER : LETTER (LETTER_OR_DIGIT)*;
 
-token STRING
-   : `(["'])(?:(?=(\\?))\2.)*?\1`
-   ;
-	
-token WHOLENUMBER : DIGIT+;
-
-noop COMMENT : `\/\/.*?((?=\n)|(?=\r\n))`;
-
-token IDENTIFIER : LETTER LETTER_OR_DIGIT*;
-
-noop WHITESPACE 
-	: `[ \t\n\r]+`
-    ;
+token INTEGER : (DIGIT)+;
 
 fragment LETTER     : `[a-zA-Z]` ;
 fragment DIGIT      : `[0-9]` ;
@@ -131,15 +125,6 @@ fragment LETTER_OR_DIGIT
 	| DIGIT
 	;
 
-fragment ESC_OR_SAFE
-	: ESC 
-	| SAFECODEPOINT
-	;
-
-fragment ESC
-   : `\` DOUBLEQUOTE
-   ;
-
-fragment SAFECODEPOINT
-   : `[^` DOUBLEQUOTE `]`
-   ;
+discard WHITESPACE 
+	: `[ \t\n\r]+`
+    ;

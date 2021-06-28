@@ -1,19 +1,31 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Control\Control.csproj" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="5.0.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Control\Control.csproj" />
+    <ProjectReference Include="..\Shift.Language\Shift.Language.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="CSharpProjectTemplate.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Example.st">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Shift.ctrl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="structureTest.st">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

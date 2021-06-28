@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Control.Services
 {
@@ -11,68 +12,66 @@ namespace Control.Services
     public class FragmentService
     {
 
-        public IEnumerable<TokenRegex> BuildTokenRegex(IEnumerable<GrammarRule> rules)
+        public Dictionary<string, Rule> BakeTokens(Dictionary<string, Rule> rules)
         {
-            var tokenRegexes = new List<TokenRegex>();
 
-            var fragmentRules = rules
-                .Where(x => x.RuleType == RuleType.Fragment)
-                .ToDictionary(x => x.Name)
+
+            var bakedRules = BakeRules(rules);
+
+            return bakedRules
+                .Where(x => x.Value.RuleType != RuleType.Fragment)
+                .ToDictionary(x => x.Key, x => x.Value)
                 ;
 
-            var lexerRules = rules
-                .Where(x => x.RuleType == RuleType.Token || x.RuleType == RuleType.Noop)
-                ;
+        }
+        
+        public Dictionary<string, Rule> BakeRules(Dictionary<string, Rule> rules)
+        {
 
-            foreach (var lexerRule in lexerRules)
+            foreach(var rule in rules)
             {
-                var regex = FlattenRule(lexerRule, fragmentRules);
 
-                var tokenRegex = new TokenRegex
+                if(rule.Value.RuleType == RuleType.Form)
                 {
-                    Name = lexerRule.Name,
-                    Regex = new Regex(regex, RegexOptions.Singleline),
-                    IsNoop = lexerRule.RuleType == RuleType.Noop
-                };
+                    continue;
+                }
 
-                tokenRegexes.Add(tokenRegex);
-
-                Console.WriteLine(tokenRegex);
-
+                rule.Value.Regex = BuildRuleRegex(rule.Value, rules);
             }
 
-
-            return tokenRegexes;
+            return rules;
 
         }
 
-        public string FlattenRule(GrammarRule rule, Dictionary<string, GrammarRule> rules)
+        public string BuildRuleRegex(Rule rule, Dictionary<string, Rule> rules)
         {
 
-            var alternatives = rule
-                .Alternatives
-                .Select(x => FlattenAlternative(x, rules))
-                .ToList()
+            if(!String.IsNullOrWhiteSpace(rule.Regex))
+            {
+                return rule.Regex;
+            }
+
+            var optionRegexes = rule
+                .Options
+                .Select(x => BuildOptionRegex(x, rules))
                 ;
 
-            var regex = alternatives
+            var regex = optionRegexes
                 .Aggregate((x, y) => $"({x})|({y})")
                 ;
 
             return regex;
-
         }
 
-        public string FlattenAlternative(Alternative alternative, Dictionary<string, GrammarRule> rules)
+        public string BuildOptionRegex(RuleOption option, Dictionary<string, Rule> rules)
         {
 
-            var clauses = alternative
-                .RuleClauses
-                .Select(x => FlattenRuleClause(x, rules))
-                .ToList()
+            var optionRegexes = option
+                .Clauses
+                .Select(x => BuildClauseRegex(x, rules))
                 ;
 
-            var regex = clauses
+            var regex = optionRegexes
                 .Aggregate((x, y) => $"{x}{y}")
                 ;
 
@@ -80,56 +79,58 @@ namespace Control.Services
 
         }
 
-        public string FlattenRuleClause(RuleClause ruleClause, Dictionary<string, GrammarRule> rules)
+        public string BuildClauseRegex(Clause clause, Dictionary<string, Rule> rules)
         {
 
-            var clause = ruleClause.Clause;
-
-            if (ruleClause.IsLiteral)
+            if (clause.ClauseType == ClauseType.CaptureGroup)
             {
 
-                clause = Regex.Escape(ruleClause.Clause);
+                var regex = BuildOptionRegex(clause.CaptureGroup, rules);
+                var modifier = BuildModifierRegex(clause.CaptureGroup.Modifier);
 
+                return $"({regex}){modifier}";
+
+            }
+            else if(clause.ClauseType == ClauseType.Reference)
+            {
+
+                var reference = rules[clause.Value];
+
+                if(reference.RuleType == RuleType.Form)
+                {
+                    throw new Exception("You need more unit tests. WTF Happened?");
+                }
+
+                return BuildRuleRegex(reference, rules);
+
+            }
+            else if (clause.ClauseType == ClauseType.Literal)
+            {
+                return Regex.Escape(clause.Value);
+            }
+            else if(clause.ClauseType == ClauseType.Regex)
+            {
+                return clause.Value;
             }
             else
             {
-                clause = FlattenFragment(ruleClause.Clause, rules);
+                throw new Exception("You forgot to program this");
             }
-
-            if (ruleClause.Qualifier != ClauseQualifier.None)
-            {
-                var qualifier = ruleClause.Qualifier switch
-                {
-                    ClauseQualifier.None => String.Empty,
-                    ClauseQualifier.NoneToOne => "?",
-                    ClauseQualifier.OneOrMore => "+",
-                    ClauseQualifier.Optional => "*"
-                };
-
-                clause = $"({clause}){qualifier}";
-
-            }
-
-
-            return clause;
 
         }
 
-        public string FlattenFragment(string clause, Dictionary<string, GrammarRule> rules)
+        public string BuildModifierRegex(CaptureModifier modifier)
         {
 
-            if (rules.ContainsKey(clause))
+            return modifier switch
             {
 
-                var fragmentRule = rules[clause];
+                CaptureModifier.None => String.Empty,
+                CaptureModifier.NoneToOne => "?",
+                CaptureModifier.OneOrMore => "+",
+                CaptureModifier.Optional => "*"
 
-                var fragment = FlattenRule(fragmentRule, rules);
-
-                return fragment;
-
-            }
-
-            return clause;
+            };
 
         }
 

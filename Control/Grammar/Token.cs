@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Control.Grammar
 {
     
     public class Token
     {
-
-        public string Name { get; set; }
+        public Rule Rule { get; set; }
         public string Capture { get; set; }
-        public bool IsRaw { get; set; }
-        public bool IsNoop { get; set; }
 
         public override string ToString()
         {
-            return Name;
+            return $"{Rule} - {Capture}";
         }
 
     }

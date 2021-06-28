@@ -7,7 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Control", "Control\Control.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Control.Tests", "Control.Tests\Control.Tests.csproj", "{26C37CD7-AFC1-48F1-AA8F-BC67603A9AF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shift", "Shift\Shift.csproj", "{AA837A2D-68AA-46ED-B9F6-5A36BE04A73B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shift", "Shift\Shift.csproj", "{AA837A2D-68AA-46ED-B9F6-5A36BE04A73B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shift.Tests", "Shift.Tests\Shift.Tests.csproj", "{F71A3F16-8282-4C6D-B8B9-C96B2B558B06}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shift.Language", "Shift.Language\Shift.Language.csproj", "{9BF110FB-2E53-4D67-85EB-5875F2D173D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +31,14 @@ Global
 		{AA837A2D-68AA-46ED-B9F6-5A36BE04A73B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA837A2D-68AA-46ED-B9F6-5A36BE04A73B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA837A2D-68AA-46ED-B9F6-5A36BE04A73B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F71A3F16-8282-4C6D-B8B9-C96B2B558B06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F71A3F16-8282-4C6D-B8B9-C96B2B558B06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F71A3F16-8282-4C6D-B8B9-C96B2B558B06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F71A3F16-8282-4C6D-B8B9-C96B2B558B06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BF110FB-2E53-4D67-85EB-5875F2D173D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BF110FB-2E53-4D67-85EB-5875F2D173D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BF110FB-2E53-4D67-85EB-5875F2D173D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BF110FB-2E53-4D67-85EB-5875F2D173D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
