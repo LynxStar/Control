@@ -1,3 +1,4 @@
 Documentation coming for now check out
 
-shiftlang.com
+
+https://shiftlang.com
