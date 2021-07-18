@@ -12,11 +12,12 @@ namespace Shift.Intermediate
     {
 
         public Application Application { get; init; } = new Application();
-        public TypeService TypeService { get; init; } = new TypeService(this);
+        public TypeService TypeService { get; init; }
         public TypeTracker Tracker { get; init; }
 
         public TypeContext()
         {
+            TypeService = new TypeService(this);
             Tracker = new TypeTracker(Application, TypeService);
         }
 

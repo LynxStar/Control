@@ -37,42 +37,39 @@ namespace Shift.Services
         public void ProcessType(Domain.Type type, LexicalScope scope)
         {
 
-            List<Method> methods;
+            scope = scope.StartChildScope();
 
-            if(type is Library library)
+            if (type is HasFields hasFields)
             {
-                methods = library
-                    .Methods
-                    .SelectMany(x => x.Value)
-                    .ToList()
-                    ;
+                foreach (var field in hasFields.Fields)
+                {
+                    scope.Scope.Add(field.Key, field.Value.Type);
+                }
             }
-            else if(type is Service service)
-            {
-                methods = service
-                    .Methods
-                    .SelectMany(x => x.Value)
-                    .ToList()
-                    ;
 
-                var constructors = service
+            //Merge list of things to check
+            List<Method> methods = new List<Method>();
+
+            if(type is HasMethods methodSource)
+            {
+
+                foreach(var method in methodSource.Methods.SelectMany(x => x.Value))
+                {
+                    scope.Scope.Add(method.Signature.Identifier, method.Signature.Type);
+                    methods.Add(method);
+                }
+
+            }
+            if(type is HasConstructors constructorSource)
+            {
+
+                var constructors = constructorSource
                     .Constructors
                     ;
 
                 methods.AddRange(constructors);
 
             }
-            else
-            {
-                throw new Exception("Donkey Doug is confuzzled");
-            }
-
-            scope = scope.StartChildScope();
-
-            scope.Scope = type is Library
-                    ? new Dictionary<string, TrackedType>()
-                    : (type as Service).Fields.ToDictionary(x => x.Key, x => x.Value.Type)
-                    ;
 
             methods
                 .ForEach(x => ProcessMethods(x, scope))
@@ -302,10 +299,19 @@ namespace Shift.Services
         public TrackedType ProcessExpression(Expression expression, LexicalScope scope)
         {
 
-            return expression switch
+            //Will this every trigger? Why would we need to pass an expression twice?
+            if(expression.Output is not null)
+            {
+                return expression.Output;
+            }
+
+            //I think this is useful for the transpiler
+            expression.Output = expression switch
             {
                 ConditionalOrExpression conditionalOrExpression => ProcessConditionalOrExpressionType(conditionalOrExpression, scope),
             };
+
+            return expression.Output;
 
         }
 
@@ -453,8 +459,8 @@ namespace Shift.Services
 
             return literal switch
             {
-                Literal<int> => scope.TypeContext.Tracker["Int32"],
-                Literal<bool> => scope.TypeContext.Tracker["Boolean"],
+                Literal<int> => scope.TypeContext.Tracker["int"],
+                Literal<bool> => scope.TypeContext.Tracker["bool"],
                 Literal<string> => scope.TypeContext.Tracker["string"]
             };
         }

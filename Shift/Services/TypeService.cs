@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Shift.Domain;
+using Shift.Intermediate;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -53,11 +54,14 @@ namespace Shift.Services
 
         private readonly Dictionary<string, SeedType> SeedTypes = new Dictionary<string, SeedType>();
 
-        private readonly Dictionary<string, AssemblySchema> externalAssemblies = new Dictionary<string, AssemblySchema>();
         private readonly Dictionary<string, List<ExportedType>> exportedTypes = new Dictionary<string, List<ExportedType>>();
 
-        public TypeService()
+        private readonly TypeContext _typeContext;
+
+        public TypeService(TypeContext typeContext)
         {
+
+            _typeContext = typeContext;
 
             SeedTypes.Add("void", new SeedType { Name = "void", Namespace = "Shift" });
             SeedTypes.Add("string", new SeedType 
@@ -76,10 +80,6 @@ namespace Shift.Services
             });
 
             var assemblies = LoadExternalTypes();
-
-            externalAssemblies = assemblies
-                .ToDictionary(x => x.AssemblyName)
-                ;
 
             exportedTypes = assemblies
                 .SelectMany(x => x.ExportedTypes)
@@ -179,7 +179,8 @@ namespace Shift.Services
                 Name = type.Name,
                 Namespace = type.Namespace,
                 FullName = type.FullName,
-                AssemblySource = assembly.AssemblyName
+                AssemblySource = assembly.AssemblyName,
+                Source = TypeSource.External
             };
 
             exportedType.Constructors = type
